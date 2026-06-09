@@ -1,6 +1,6 @@
 // 1. SUPABASE INITIALISIERUNG (Exakt auf deine beamerhoehle-collection eingestellt)
 const SUPABASE_URL = 'https://kmanxvyaluledddvzdxv.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttYW54dnlhbHVsZWRkZHZ6ZHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjU5NjIsImV4cCI6MjA5NjYwMTk2Mn0.qBCdrzOo4qSbItETomTJ38Fc4gpvE4dMt5L9rYwMKq8';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttYW54dnlhbHVsZWRkZHZ6ZHh2Iiwicm9sZSI6Imam9uIiwiaWF0IjoxNzgxMDI1OTYyLCJleHAiOjIwOTY2MDE5NjJ9.qBCdrzOo4qSbItETomTJ38Fc4gpvE4dMt5L9rYwMKq8';
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -13,7 +13,6 @@ let activeImages = [];
 
 // 2. INITIALISIERUNG BEIM SEITENSTART
 document.addEventListener('DOMContentLoaded', async () => {
-    // Holt dein echtes T-Shirt anhand des korrekten Slugs aus der Datenbank
     await loadProduct('beamerhoehle-tshirt-n1');
     updateCartCount();
     renderCartItems();
@@ -47,12 +46,11 @@ async function loadProduct(slug) {
     document.getElementById('prodCare').innerText = product.care_instructions;
     document.getElementById('prodShipping').innerText = product.shipping_info;
 
-    // Galerie & Größen-Buttons rendern
     setupGallery();
     renderSizeGrid(product.shirt_variants);
 }
 
-// 4. GALERIE-LOGIK (Deine zwei hochgeladenen Produktbilder anzeigen)
+// 4. GALERIE-LOGIK
 function setupGallery() {
     const mainImg = document.getElementById('mainImg');
     const thumbStrip = document.getElementById('thumbStrip');
@@ -60,21 +58,17 @@ function setupGallery() {
 
     if (!activeImages || activeImages.length === 0) return;
 
-    // Erstes Bild als Hauptbild setzen
     mainImg.src = activeImages[0];
-
     thumbStrip.innerHTML = '';
     thumbDots.innerHTML = '';
 
     activeImages.forEach((imgUrl, index) => {
-        // Thumbnails für Desktop erstellen
         const thumb = document.createElement('div');
         thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
         thumb.onclick = () => switchImg(index, thumb);
         thumb.innerHTML = `<img src="${imgUrl}" alt="Ansicht ${index + 1}">`;
         thumbStrip.appendChild(thumb);
 
-        // Mobile Navigations-Punkte erstellen
         const dot = document.createElement('button');
         dot.className = `thumb-dot ${index === 0 ? 'active' : ''}`;
         dot.onclick = () => switchImg(index, dot);
@@ -91,7 +85,6 @@ function switchImg(index, element) {
         mainImg.classList.remove('fade');
     }, 200);
 
-    // Aktiven Zustand bei Klick visuell umschalten
     document.querySelectorAll('.thumb').forEach((t, i) => {
         t.classList.toggle('active', i === index);
     });
@@ -100,12 +93,11 @@ function switchImg(index, element) {
     });
 }
 
-// 5. GRÖSSEN-GRID RENDERN (Erkennt ausverkaufte Größen von M bis 2XL live)
+// 5. GRÖSSEN-GRID RENDERN
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
     sizeGrid.innerHTML = '';
 
-    // Sortierung von M bis 2XL festlegen
     const sizeOrder = ['M', 'L', 'XL', '2XL'];
     variants.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
 
@@ -114,7 +106,6 @@ function renderSizeGrid(variants) {
         btn.className = 'size-btn';
         btn.innerText = variant.size;
 
-        // Falls Lagerbestand 0 oder weniger ist -> Button sperren
         if (variant.stock <= 0) {
             btn.disabled = true;
             btn.style.opacity = '0.3';
@@ -146,8 +137,6 @@ function toggleCart() {
 function showView(viewId) {
     document.querySelectorAll('.cart-body .view').forEach(v => v.classList.remove('active'));
     document.getElementById(viewId).classList.add('active');
-    
-    // Die Bestelloptionen (Abholung) nur im Haupt-Warenkorb anzeigen
     document.getElementById('checkoutOptions').style.display = (viewId === 'viewItems' && cart.length > 0) ? 'grid' : 'none';
 }
 
@@ -174,7 +163,7 @@ function addToCart() {
     }
 
     saveCart();
-    toggleCart(); // Öffnet den Warenkorb automatisch nach dem Hinzufügen
+    toggleCart();
 }
 
 function saveCart() {
@@ -205,10 +194,14 @@ function renderCartItems() {
     }
 
     container.innerHTML = '';
-    let total = 0;
+    let productTotal = 0;
+    let totalItemsCount = 0;
 
+    // Artikel auflisten
     cart.forEach((item, index) => {
-        total += item.price * item.qty;
+        productTotal += item.price * item.qty;
+        totalItemsCount += item.qty;
+        
         const itemEl = document.createElement('div');
         itemEl.className = 'cart-item';
         itemEl.innerHTML = `
@@ -230,7 +223,28 @@ function renderCartItems() {
         container.appendChild(itemEl);
     });
 
-    totalDisplay.innerText = `€ ${(total / 100).toFixed(2).replace('.', ',')}`;
+    // NEU: Versandkosten-Logik (Frei ab 2 Artikeln)
+    let shippingCost = totalItemsCount >= 2 ? 0 : 299; // 299 Cents = 2,99 €
+    
+    // Versandkosten als Zeile im Warenkorb anzeigen, falls vorhanden
+    const shippingEl = document.createElement('div');
+    shippingEl.style.display = 'flex';
+    shippingEl.style.justify = 'space-between';
+    shippingEl.style.padding = '0.5rem 0';
+    shippingEl.style.fontSize = '0.9rem';
+    shippingEl.style.color = '#888';
+    shippingEl.style.borderTop = '1px dashed #333';
+    
+    if (shippingCost > 0) {
+        shippingEl.innerHTML = `<span>Versandkosten:</span><span>€ 2,99</span>`;
+    } else {
+        shippingEl.innerHTML = `<span>Versandkosten:</span><span style="color: #00ff66;">Kostenlos</span>`;
+    }
+    container.appendChild(shippingEl);
+
+    // Endsumme berechnen (Produkte + Versand)
+    let grandTotal = productTotal + shippingCost;
+    totalDisplay.innerText = `€ ${(grandTotal / 100).toFixed(2).replace('.', ',')}`;
     checkoutOptions.style.display = 'grid';
 }
 
@@ -247,7 +261,7 @@ function removeItem(index) {
     saveCart();
 }
 
-// 7. BESTELLUNG ABSENDEN (Überträgt Formulardaten & Warenkorb sicher an Supabase)
+// 7. BESTELLUNG ABSENDEN
 async function submitOrder() {
     const email = document.getElementById('pickupEmail').value.trim();
     const first = document.getElementById('pickupFirst').value.trim();
@@ -264,7 +278,10 @@ async function submitOrder() {
 
     if (!valid) return;
 
-    const totalCents = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    let totalItemsCount = cart.reduce((sum, item) => sum + item.qty, 0);
+    let productTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    let shippingCost = totalItemsCount >= 2 ? 0 : 299;
+    let grandTotal = productTotal + shippingCost;
 
     const orderData = {
         email: email,
@@ -272,7 +289,7 @@ async function submitOrder() {
         last_name: last,
         delivery_method: 'pickup',
         payment_method: 'bar',
-        total_amount_in_cents: totalCents,
+        total_amount_in_cents: grandTotal, // Speichert den korrekten Gesamtpreis inklusive Versand
         cart_items: cart,
         status: 'pending'
     };
@@ -287,7 +304,6 @@ async function submitOrder() {
         return;
     }
 
-    // Erfolg: Warenkorb leeren und den Danke-Bildschirm anzeigen
     cart = [];
     localStorage.removeItem('vaux_cart');
     updateCartCount();
