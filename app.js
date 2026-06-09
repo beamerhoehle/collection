@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadProduct(slug) {
-    // DIAGNOSE: Wir loggen den Start
     console.log("Versuche Produkt zu laden...", slug);
     
     const { data: product, error } = await supabaseClient
@@ -26,7 +25,6 @@ async function loadProduct(slug) {
         .eq('slug', slug)
         .single();
 
-    // WENN EIN FEHLER AUFTRITT, SCHREIBEN WIR IHN DIREKT INS LOGO / DEN TITEL
     if (error) {
         console.error('Supabase Fehler Details:', error);
         document.getElementById('prodName').innerHTML = `FEHLER:<br><span style="font-size:1.5rem; color:red; font-family:sans-serif;">${error.message} (${error.code})</span>`;
@@ -145,13 +143,13 @@ function addToCart() {
     toggleCart();
 }
 
+// HIER WAR DER FEHLER - JETZT BEREINIGT:
 function saveCart() {
     localStorage.setItem('vaux_cart', JSON.stringify(cart));
     updateCartCount();
     renderCartItems();
 }
 
-fn u
 function updateCartCount() {
     const count = cart.reduce((total, item) => total + item.qty, 0);
     document.getElementById('cartCount').innerText = count;
