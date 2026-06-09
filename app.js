@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadProduct(slug) {
     console.log("Versuche Produkt zu laden...", slug);
     
-    // Holt das Shirt UND die dazugehörigen echten Größen aus der DB
     const { data: product, error } = await supabaseClient
         .from('shirts')
         .select(`*, shirt_variants (*)`)
@@ -84,7 +83,6 @@ function switchImg(index, element) {
     document.querySelectorAll('.thumb-dot').forEach((d, i) => d.classList.toggle('active', i === index));
 }
 
-// LÄDT DIE ECHTEN GRÖSSEN AUS DEINER DATENBANK
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
     sizeGrid.innerHTML = '';
