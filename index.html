@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=EUR"></script>
 </head>
 <body>
 
@@ -22,13 +24,10 @@
     </nav>
 
     <main class="product-wrap">
-        
         <section class="gallery">
             <span class="gallery-label">Kollektion N°1</span>
             <img id="mainImg" class="gallery-main" src="" alt="Produktansicht">
-            
             <div id="thumbStrip" class="thumb-strip"></div>
-            
             <div id="thumbDots" class="thumb-dots"></div>
         </section>
 
@@ -45,8 +44,7 @@
             </div>
 
             <div class="section-label">Größe wählen</div>
-            <div id="sizeGrid" class="size-grid">
-                </div>
+            <div id="sizeGrid" class="size-grid"></div>
             <div id="sizeError" class="error-msg">Bitte wähle zuerst eine Größe aus.</div>
 
             <div class="section-label">Anzahl</div>
@@ -86,38 +84,62 @@
         <div class="cart-body">
             
             <div id="viewItems" class="view active">
-                <div id="cartItemsContainer">
-                    </div>
+                <div id="cartItemsContainer"></div>
             </div>
 
             <div id="viewCheckout" class="view checkout-form">
-                <button class="back-link" onclick="showView('viewItems')">← Zurück zum Warenkorb</button>
-                <h2>Bestelldetails</h2>
-                <p class="form-sub">Bitte fülle die Felder aus, um die Bestellung abzuschließen.</p>
+                <button class="back-link" onclick="showView('viewItems')">← Zurück</button>
+                <h2 id="checkoutTitle">Bestelldetails</h2>
+                <p class="form-sub">Bitte fülle die Felder aus, um fortzufahren.</p>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="pickupFirst">Vorname <span class="req">*</span></label>
-                        <input type="text" id="pickupFirst" placeholder="Max">
-                        <div id="pickupFirstErr" class="form-error">Vorname erforderlich.</div>
+                        <label>Vorname <span class="req">*</span></label>
+                        <input type="text" id="custFirst" placeholder="Max">
+                        <div id="custFirstErr" class="form-error">Vorname erforderlich.</div>
                     </div>
                     <div class="form-group">
-                        <label for="pickupLast">Nachname <span class="req">*</span></label>
-                        <input type="text" id="pickupLast" placeholder="Mustermann">
-                        <div id="pickupLastErr" class="form-error">Nachname erforderlich.</div>
+                        <label>Nachname <span class="req">*</span></label>
+                        <input type="text" id="custLast" placeholder="Mustermann">
+                        <div id="custLastErr" class="form-error">Nachname erforderlich.</div>
                     </div>
                 </div>
 
                 <div class="form-row full">
                     <div class="form-group">
-                        <label for="pickupEmail">E-Mail-Adresse <span class="req">*</span></label>
-                        <input type="email" id="pickupEmail" placeholder="max@mustermann.de">
-                        <div id="pickupEmailErr" class="form-error">Gültige E-Mail erforderlich.</div>
+                        <label>E-Mail-Adresse <span class="req">*</span></label>
+                        <input type="email" id="custEmail" placeholder="max@mustermann.de">
+                        <div id="custEmailErr" class="form-error">Gültige E-Mail erforderlich.</div>
                     </div>
                 </div>
 
-                <button class="pay-btn" onclick="submitOrder()">Verbindlich Bestellen</button>
-                <p class="shipping-note">Bezahlung erfolgt bar bei Abholung.</p>
+                <div id="shippingAddressFields" style="display: none;">
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label>Straße & Hausnummer <span class="req">*</span></label>
+                            <input type="text" id="custStreet" placeholder="Hauptstraße 12">
+                            <div id="custStreetErr" class="form-error">Adresse erforderlich.</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 0.4;">
+                            <label>PLZ <span class="req">*</span></label>
+                            <input type="text" id="custZip" placeholder="12345">
+                            <div id="custZipErr" class="form-error">PLZ erforderlich.</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Ort <span class="req">*</span></label>
+                            <input type="text" id="custCity" placeholder="Musterstadt">
+                            <div id="custCityErr" class="form-error">Ort erforderlich.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="standardSubmitBtn" class="pay-btn" onclick="submitOrder('bar')">Verbindlich Bestellen</button>
+                
+                <div id="paypalButtonContainer" style="margin-top: 1.5rem; display: none;"></div>
+                
+                <p id="paymentNote" class="shipping-note">Bezahlung erfolgt bar bei Abholung.</p>
             </div>
 
             <div id="viewSuccess" class="view success-view">
@@ -135,15 +157,15 @@
             </div>
             
             <div id="checkoutOptions" class="checkout-options">
-                <button class="checkout-opt-btn" onclick="showView('viewCheckout')">
+                <button class="checkout-opt-btn" onclick="startCheckout('pickup')">
                     <span class="opt-icon">🏪</span>
                     <span class="opt-label">Abholung</span>
-                    <span class="opt-sub">Barzahlung vor Ort</span>
+                    <span class="opt-sub">Bar vor Ort (0€ Versand)</span>
                 </button>
-                <button class="checkout-opt-btn" disabled style="opacity: 0.4; cursor: not-allowed;">
-                    <span class="opt-icon">💳</span>
-                    <span class="opt-label">Online</span>
-                    <span class="opt-sub">Demnächst verfügbar</span>
+                <button class="checkout-opt-btn" onclick="startCheckout('shipping')">
+                    <span class="opt-icon">📦</span>
+                    <span class="opt-label">Lieferung</span>
+                    <span class="opt-sub">PayPal (+ Versand)</span>
                 </button>
             </div>
         </div>
