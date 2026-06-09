@@ -16,14 +16,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCartItems();
 });
 
-// 3. PRODUKTDATEN DYNAMISCH AUS SUPABASE LADEN (Vereinfachter Test)
+// 3. PRODUKTDATEN DYNAMISCH AUS SUPABASE LADEN
 async function loadProduct(slug) {
     console.log("Versuche Produkt zu laden...", slug);
     
-    // VEREINFACHT: Wir laden erst mal NUR das Shirt, ohne die Größen-Tabelle zu erzwingen
+    // Holt das Shirt UND die dazugehörigen echten Größen aus der DB
     const { data: product, error } = await supabaseClient
         .from('shirts')
-        .select(`*`)
+        .select(`*, shirt_variants (*)`)
         .eq('slug', slug)
         .single();
 
@@ -49,9 +49,7 @@ async function loadProduct(slug) {
     document.getElementById('prodShipping').innerText = product.shipping_info;
 
     setupGallery();
-    
-    // Falls keine Größen mitgeladen wurden, erstellen wir temporäre Dummy-Buttons zum Testen
-    renderDummySizes();
+    renderSizeGrid(product.shirt_variants);
 }
 
 function setupGallery() {
@@ -86,22 +84,37 @@ function switchImg(index, element) {
     document.querySelectorAll('.thumb-dot').forEach((d, i) => d.classList.toggle('active', i === index));
 }
 
-// TEMPORÄRE GRÖSSEN-BUTTONS FÜR DEN TEST
-function renderDummySizes() {
+// LÄDT DIE ECHTEN GRÖSSEN AUS DEINER DATENBANK
+function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
     sizeGrid.innerHTML = '';
-    const dummySizes = ['M', 'L', 'XL', '2XL'];
     
-    dummySizes.forEach(size => {
+    if (!variants || variants.length === 0) {
+        sizeGrid.innerHTML = '<p style="color:red;">Keine Größen in DB hinterlegt.</p>';
+        return;
+    }
+
+    const sizeOrder = ['M', 'L', 'XL', '2XL'];
+    variants.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
+    
+    variants.forEach(variant => {
         const btn = document.createElement('button');
         btn.className = 'size-btn';
-        btn.innerText = size;
-        btn.onclick = () => {
-            selectedSize = size;
-            document.getElementById('sizeError').classList.remove('show');
-            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-        };
+        btn.innerText = variant.size;
+        
+        if (variant.stock <= 0) {
+            btn.disabled = true;
+            btn.style.opacity = '0.3';
+            btn.style.cursor = 'not-allowed';
+            btn.innerText += ' (Ausverkauft)';
+        } else {
+            btn.onclick = () => {
+                selectedSize = variant.size;
+                document.getElementById('sizeError').classList.remove('show');
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            };
+        }
         sizeGrid.appendChild(btn);
     });
 }
