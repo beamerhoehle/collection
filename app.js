@@ -1,4 +1,3 @@
-// 1. SUPABASE INITIALISIERUNG
 const SUPABASE_URL = 'https://kmanxvyaluledddvzdxv.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttYW54dnlhbHVsZWRkZHZ6ZHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjU5NjIsImV4cCI6MjA5NjYwMTk2Mn0.qBCdrzOo4qSbItETomTJ38Fc4gpvE4dMt5L9rYwMKq8';
 
@@ -9,19 +8,16 @@ let selectedSize = null;
 let currentQty = 1;
 let cart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
 let activeImages = [];
+let currentDeliveryMethod = 'pickup'; // 'pickup' oder 'shipping'
 
-// App starten sobald das Dokument geladen wurde
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("App initialisiert. Starte Produkt-Download...");
     await loadProduct('beamerhoehle-tshirt-n1');
     updateCartCount();
     renderCartItems();
+    initPayPalSdk();
 });
 
-// 2. PRODUKTDATEN DYNAMISCH AUS SUPABASE LADEN
 async function loadProduct(slug) {
-    console.log("Versuche Produkt zu laden mit Slug:", slug);
-    
     const { data: product, error } = await supabaseClient
         .from('shirts')
         .select(`*, shirt_variants (*)`)
@@ -29,56 +25,37 @@ async function loadProduct(slug) {
         .single();
 
     if (error) {
-        console.error('Kritischer Supabase Fehler:', error);
-        document.getElementById('prodName').innerHTML = `FEHLER:<br><span style="font-size:1.5rem; color:red; font-family:sans-serif;">${error.message} (${error.code})</span>`;
+        document.getElementById('prodName').innerHTML = `FEHLER:<br><span style="color:red;">${error.message}</span>`;
         return;
     }
-
-    if (!product) {
-        console.warn('Kein Produkt mit diesem Slug in der DB gefunden.');
-        document.getElementById('prodName').innerText = "PRODUKT LEER IN DB";
-        return;
-    }
-
-    console.log("Produkt erfolgreich geladen:", product);
 
     currentProduct = product;
     activeImages = product.images || [];
 
-    // Titel befüllen (Zeilenumbruch bei Leerzeichen)
     document.getElementById('prodName').innerHTML = product.name.replace(/ /g, '<br>');
     document.getElementById('prodSubtitle').innerText = product.subtitle || '';
     document.getElementById('prodPrice').innerText = `€ ${(product.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
-    document.getElementById('prodDescription').innerText = product.description || 'Keine Beschreibung vorhanden.';
-    document.getElementById('prodCare').innerText = product.care_instructions || 'Standard Wäsche.';
-    document.getElementById('prodShipping').innerText = product.shipping_info || 'Sofort versandfertig.';
+    document.getElementById('prodDescription').innerText = product.description || '';
+    document.getElementById('prodCare').innerText = product.care_instructions || '';
+    document.getElementById('prodShipping').innerText = product.shipping_info || '';
 
-    // Galerie & Größen rendern
     setupGallery();
     renderSizeGrid(product.shirt_variants);
 }
 
-// 3. IMAGES-GALLERY LOGIK (DESKTOP & MOBILE)
 function setupGallery() {
     const mainImg = document.getElementById('mainImg');
     const thumbStrip = document.getElementById('thumbStrip');
     const thumbDots = document.getElementById('thumbDots');
-    
-    if (!activeImages || activeImages.length === 0) return;
-    
+    if (!activeImages.length) return;
     mainImg.src = activeImages[0];
-    thumbStrip.innerHTML = '';
-    thumbDots.innerHTML = '';
-    
+    thumbStrip.innerHTML = ''; thumbDots.innerHTML = '';
     activeImages.forEach((imgUrl, index) => {
-        // Desktop Thumbnails
         const thumb = document.createElement('div');
         thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
         thumb.onclick = () => switchImg(index, thumb);
-        thumb.innerHTML = `<img src="${imgUrl}" alt="Ansicht ${index + 1}">`;
+        thumb.innerHTML = `<img src="${imgUrl}">`;
         thumbStrip.appendChild(thumb);
-        
-        // Mobile Dots
         const dot = document.createElement('button');
         dot.className = `thumb-dot ${index === 0 ? 'active' : ''}`;
         dot.onclick = () => switchImg(index, dot);
@@ -89,64 +66,25 @@ function setupGallery() {
 function switchImg(index, element) {
     const mainImg = document.getElementById('mainImg');
     mainImg.classList.add('fade');
-    setTimeout(() => {
-        mainImg.src = activeImages[index];
-        mainImg.classList.remove('fade');
-    }, 200);
-    
+    setTimeout(() => { mainImg.src = activeImages[index]; mainImg.classList.remove('fade'); }, 200);
     document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
     document.querySelectorAll('.thumb-dot').forEach((d, i) => d.classList.toggle('active', i === index));
 }
 
-// 4. GRÖSSEN GENERIEREN & SORTIEREN
 function renderSizeGrid(variants) {
-    const sizeGrid = document.getElementById('sizeGrid');
-    sizeGrid.innerHTML = '';
-    
-    if (!variants || variants.length === 0) {
-        sizeGrid.innerHTML = '<p style="color:red;">Keine Größen in DB hinterlegt.</p>';
-        return;
-    }
-
+    const sizeGrid = document.getElementById('sizeGrid'); sizeGrid.innerHTML = '';
     const sizeOrder = ['M', 'L', 'XL', '2XL'];
     variants.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
-    
     variants.forEach(variant => {
-        const btn = document.createElement('button');
-        btn.className = 'size-btn';
-        btn.innerText = variant.size;
-        
-        if (variant.stock <= 0) {
-            btn.disabled = true;
-            btn.style.opacity = '0.3';
-            btn.style.cursor = 'not-allowed';
-            btn.innerText += ' (Ausv.)';
-        } else {
-            btn.onclick = () => {
-                selectedSize = variant.size;
-                document.getElementById('sizeError').classList.remove('show');
-                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-            };
-        }
+        const btn = document.createElement('button'); btn.className = 'size-btn'; btn.innerText = variant.size;
+        if (variant.stock <= 0) { btn.disabled = true; btn.style.opacity = '0.3'; btn.innerText += ' (Ausv.)'; }
+        else { btn.onclick = () => { selectedSize = variant.size; document.getElementById('sizeError').classList.remove('show'); document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); }; }
         sizeGrid.appendChild(btn);
     });
 }
 
-// 5. ANZAHL-STEUERUNG
-function changeQty(change) {
-    currentQty = Math.max(1, currentQty + change);
-    document.getElementById('qtyDisplay').innerText = currentQty;
-}
-
-// 6. WARENKORB INTERAKTIONEN (ÖFFNEN / SCHLIESSEN)
-function toggleCart() {
-    document.getElementById('cartOverlay').classList.toggle('open');
-    document.getElementById('cartPanel').classList.toggle('open');
-    if(document.getElementById('cartPanel').classList.contains('open')) {
-        showView('viewItems'); // Zurücksetzen zur Artikelliste beim Öffnen
-    }
-}
+function changeQty(change) { currentQty = Math.max(1, currentQty + change); document.getElementById('qtyDisplay').innerText = currentQty; }
+function toggleCart() { document.getElementById('cartOverlay').classList.toggle('open'); document.getElementById('cartPanel').classList.toggle('open'); }
 
 function showView(viewId) {
     document.querySelectorAll('.cart-body .view').forEach(v => v.classList.remove('active'));
@@ -155,62 +93,49 @@ function showView(viewId) {
 }
 
 function addToCart() {
-    if (!selectedSize) {
-        document.getElementById('sizeError').classList.add('show');
-        return;
+    if (!selectedSize) { document.getElementById('sizeError').classList.add('show'); return; }
+    const cartItem = { id: currentProduct.id, name: currentProduct.name, size: selectedSize, price: currentProduct.price_in_cents, qty: currentQty, image: activeImages[0] };
+    const idx = cart.findIndex(i => i.id === cartItem.id && i.size === cartItem.size);
+    if (idx > -1) { cart[idx].qty += currentQty; } else { cart.push(cartItem); }
+    saveCart(); toggleCart();
+}
+
+function saveCart() { localStorage.setItem('vaux_cart', JSON.stringify(cart)); updateCartCount(); renderCartItems(); }
+function updateCartCount() { document.getElementById('cartCount').innerText = cart.reduce((t, i) => t + i.qty, 0); }
+
+// BERECHNET DEN GESAMTPREIS JE NACH LIEFERMETHODE
+function calculateTotals() {
+    let productTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    let totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+    let shippingCost = 0;
+
+    // Versandkosten nur berechnen, wenn "Lieferung" gewählt wurde und weniger als 2 Artikel im Korb sind
+    if (currentDeliveryMethod === 'shipping') {
+        shippingCost = totalItems >= 2 ? 0 : 299;
     }
-    const cartItem = {
-        id: currentProduct.id,
-        name: currentProduct.name,
-        size: selectedSize,
-        price: currentProduct.price_in_cents,
-        qty: currentQty,
-        image: activeImages[0]
+
+    return {
+        productTotal: productTotal,
+        shippingCost: shippingCost,
+        grandTotal: productTotal + shippingCost
     };
-    const existingIndex = cart.findIndex(item => item.id === cartItem.id && item.size === cartItem.size);
-    if (existingIndex > -1) { 
-        cart[existingIndex].qty += currentQty; 
-    } else { 
-        cart.push(cartItem); 
-    }
-    saveCart();
-    toggleCart();
-}
-
-function saveCart() {
-    localStorage.setItem('vaux_cart', JSON.stringify(cart));
-    updateCartCount();
-    renderCartItems();
-}
-
-function updateCartCount() {
-    const count = cart.reduce((total, item) => total + item.qty, 0);
-    document.getElementById('cartCount').innerText = count;
 }
 
 function renderCartItems() {
     const container = document.getElementById('cartItemsContainer');
     const totalDisplay = document.getElementById('cartTotal');
-    const checkoutOptions = document.getElementById('checkoutOptions');
     
     if (cart.length === 0) {
-        container.innerHTML = `<div class="cart-empty"><strong>Leergut.</strong>Dein Warenkorb ist aktuell leer.</div>`;
+        container.innerHTML = `<div class="cart-empty"><strong>Leergut.</strong>Dein Warenkorb ist leer.</div>`;
         totalDisplay.innerText = '€ 0,00';
-        checkoutOptions.style.display = 'none';
         return;
     }
     
     container.innerHTML = '';
-    let productTotal = 0;
-    let totalItemsCount = 0;
-    
     cart.forEach((item, index) => {
-        productTotal += item.price * item.qty;
-        totalItemsCount += item.qty;
-        const itemEl = document.createElement('div');
-        itemEl.className = 'cart-item';
+        const itemEl = document.createElement('div'); itemEl.className = 'cart-item';
         itemEl.innerHTML = `
-            <img src="${item.image}" class="cart-item-img" alt="${item.name}">
+            <img src="${item.image}" class="cart-item-img">
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.name}</div>
                 <div class="cart-item-size">Größe: ${item.size}</div>
@@ -223,80 +148,149 @@ function renderCartItems() {
                     <span class="cart-item-price">€ ${((item.price * item.qty) / 100).toFixed(2).replace('.', ',')}</span>
                 </div>
                 <button class="remove-item-btn" onclick="removeItem(${index})">Entfernen</button>
-            </div>
-        `;
+            </div>`;
         container.appendChild(itemEl);
     });
     
-    // Versandkosten-Logik (Ab 2 Teilen kostenlos)
-    let shippingCost = totalItemsCount >= 2 ? 0 : 299;
+    let totals = calculateTotals();
+    
     const shippingEl = document.createElement('div');
     shippingEl.style = "display:flex; justify-content:space-between; padding:0.5rem 0; font-size:0.9rem; color:#555; border-top:1px dashed #222; margin-top:1rem;";
-    if (shippingCost > 0) { 
-        shippingEl.innerHTML = `<span>Versandkosten:</span><span>€ 2,99</span>`; 
-    } else { 
-        shippingEl.innerHTML = `<span>Versandkosten:</span><span style="color: #00ff66;">Kostenlos</span>`; 
+    if (currentDeliveryMethod === 'pickup') {
+        shippingEl.innerHTML = `<span>Versandart:</span><span>🏪 Selbstabholung</span>`;
+    } else {
+        shippingEl.innerHTML = `<span>Versandkosten:</span><span>${totals.shippingCost > 0 ? '€ 2,99' : '<span style="color:#00ff66;">Kostenlos</span>'}</span>`;
     }
     container.appendChild(shippingEl);
     
-    let grandTotal = productTotal + shippingCost;
-    totalDisplay.innerText = `€ ${(grandTotal / 100).toFixed(2).replace('.', ',')}`;
-    checkoutOptions.style.display = 'grid';
+    totalDisplay.innerText = `€ ${(totals.grandTotal / 100).toFixed(2).replace('.', ',')}`;
 }
 
-function updateQty(index, change) {
-    cart[index].qty += change;
-    if (cart[index].qty <= 0) { cart.splice(index, 1); }
-    saveCart();
-}
+function updateQty(index, change) { cart[index].qty += change; if (cart[index].qty <= 0) { cart.splice(index, 1); } saveCart(); }
+function removeItem(index) { cart.splice(index, 1); saveCart(); }
 
-function removeItem(index) {
-    cart.splice(index, 1);
-    saveCart();
-}
-
-// 7. BESTELLUNG ABSCHICKEN (AN DIE ORDERS TABELLE)
-async function submitOrder() {
-    const email = document.getElementById('pickupEmail').value.trim();
-    const first = document.getElementById('pickupFirst').value.trim();
-    const last = document.getElementById('pickupLast').value.trim();
+// INITIALISIERT DAS FORMULAR PASSEND ZUR AUSWAHL (ABHOLUNG ODER VERSAND)
+function startCheckout(method) {
+    currentDeliveryMethod = method;
+    renderCartItems(); // Preis & Versandzeile aktualisieren
     
-    document.getElementById('pickupEmailErr').classList.remove('show');
-    document.getElementById('pickupFirstErr').classList.remove('show');
-    document.getElementById('pickupLastErr').classList.remove('show');
+    const addrFields = document.getElementById('shippingAddressFields');
+    const stdBtn = document.getElementById('standardSubmitBtn');
+    const ppBtn = document.getElementById('paypalButtonContainer');
+    const payNote = document.getElementById('paymentNote');
+    const title = document.getElementById('checkoutTitle');
     
-    let valid = true;
-    if (!email || !email.includes('@')) { document.getElementById('pickupEmailErr').classList.add('show'); valid = false; }
-    if (!first) { document.getElementById('pickupFirstErr').classList.add('add-btn-wrap'); valid = false; }
-    if (!last) { document.getElementById('pickupLastErr').classList.add('show'); valid = false; }
-    if (!valid) return;
-    
-    let totalItemsCount = cart.reduce((sum, item) => sum + item.qty, 0);
-    let productTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    let shippingCost = totalItemsCount >= 2 ? 0 : 299;
-    let grandTotal = productTotal + shippingCost;
-    
-    const orderData = {
-        email: email,
-        first_name: first,
-        last_name: last,
-        delivery_method: 'pickup',
-        payment_method: 'bar',
-        total_amount_in_cents: grandTotal,
-        cart_items: cart,
-        status: 'pending'
-    };
-    
-    const { error } = await supabaseClient.from('orders').insert([orderData]);
-    if (error) { 
-        alert('Fehler beim Absenden der Bestellung.'); 
-        console.error(error); 
-        return; 
+    if (method === 'shipping') {
+        title.innerText = "Lieferadresse";
+        addrFields.style.display = "block"; // Adressfelder einblenden
+        stdBtn.style.display = "none";      // Normalen Button verstecken
+        ppBtn.style.display = "block";     // PayPal-Buttons einblenden
+        payNote.innerText = "Sichere Bezahlung direkt via PayPal.";
+    } else {
+        title.innerText = "Abholerdetails";
+        addrFields.style.display = "none";  // Adressfelder verstecken
+        stdBtn.style.display = "block";     // Normalen Button einblenden
+        ppBtn.style.display = "none";      // PayPal verstecken
+        payNote.innerText = "Bezahlung erfolgt bar bei Abholung vor Ort.";
     }
     
-    // Warenkorb leeren bei Erfolg
+    showView('viewCheckout');
+}
+
+// FORMULAR VALIDIERUNG
+function validateForm() {
+    const first = document.getElementById('custFirst').value.trim();
+    const last = document.getElementById('custLast').value.trim();
+    const email = document.getElementById('custEmail').value.trim();
+    
+    let valid = true;
+    
+    if (!first) { document.getElementById('custFirstErr').classList.add('show'); valid = false; } else { document.getElementById('custFirstErr').classList.remove('show'); }
+    if (!last) { document.getElementById('custLastErr').classList.add('show'); valid = false; } else { document.getElementById('custLastErr').classList.remove('show'); }
+    if (!email || !email.includes('@')) { document.getElementById('custEmailErr').classList.add('show'); valid = false; } else { document.getElementById('custEmailErr').classList.remove('show'); }
+    
+    if (currentDeliveryMethod === 'shipping') {
+        const street = document.getElementById('custStreet').value.trim();
+        const zip = document.getElementById('custZip').value.trim();
+        const city = document.getElementById('custCity').value.trim();
+        
+        if (!street) { document.getElementById('custStreetErr').classList.add('show'); valid = false; } else { document.getElementById('custStreetErr').classList.remove('show'); }
+        if (!zip) { document.getElementById('custZipErr').classList.add('show'); valid = false; } else { document.getElementById('custZipErr').classList.remove('show'); }
+        if (!city) { document.getElementById('custCityErr').classList.add('show'); valid = false; } else { document.getElementById('custCityErr').classList.remove('show'); }
+    }
+    
+    return valid;
+}
+
+// BESTELLUNG ABSCHICKEN (FÜR ABHOLUNG / BARZAHLUNG)
+async function submitOrder(paymentMethodName, payPalTransactionId = null) {
+    if (!validateForm()) return false;
+    
+    let totals = calculateTotals();
+    
+    const orderData = {
+        first_name: document.getElementById('custFirst').value.trim(),
+        last_name: document.getElementById('custLast').value.trim(),
+        email: document.getElementById('custEmail').value.trim(),
+        delivery_method: currentDeliveryMethod,
+        payment_method: paymentMethodName,
+        total_amount_in_cents: totals.grandTotal,
+        cart_items: cart,
+        status: currentDeliveryMethod === 'shipping' ? 'paid' : 'pending',
+        street: currentDeliveryMethod === 'shipping' ? document.getElementById('custStreet').value.trim() : null,
+        zip_code: currentDeliveryMethod === 'shipping' ? document.getElementById('custZip').value.trim() : null,
+        city: currentDeliveryMethod === 'shipping' ? document.getElementById('custCity').value.trim() : null
+    };
+
+    const { error } = await supabaseClient.from('orders').insert([orderData]);
+    if (error) {
+        alert('Datenbank-Fehler beim Speichern der Bestellung.');
+        console.error(error);
+        return false;
+    }
+    
     cart = [];
     localStorage.removeItem('vaux_cart');
     updateCartCount();
     showView('viewSuccess');
+    return true;
+}
+
+// INTEGRIERT DAS ORIGINAL PAYPAL WINDOW IN DAS FORMULAR
+function initPayPalSdk() {
+    if (!window.paypal) return;
+    
+    window.paypal.Buttons({
+        onClick: function(data, actions) {
+            // Bevor PayPal öffnet, prüfen wir ob alle Pflichtfelder ausgefüllt sind
+            if (!validateForm()) {
+                alert("Bitte fülle alle markierten Adressfelder aus.");
+                return actions.reject();
+            }
+            return actions.resolve();
+        },
+        createOrder: function(data, actions) {
+            let totals = calculateTotals();
+            let finalEuroAmount = (totals.grandTotal / 100).toFixed(2);
+            
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: finalEuroAmount,
+                        currency_code: 'EUR'
+                    }
+                }]
+            });
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(async function(details) {
+                // Zahlung war bei PayPal erfolgreich! Nun in Supabase abspeichern
+                await submitOrder(`paypal_id: ${details.id}`);
+            });
+        },
+        onError: function(err) {
+            console.error('PayPal Checkout Fehler:', err);
+            alert('Die PayPal-Zahlung wurde abgebrochen oder es trat ein Fehler auf.');
+        }
+    }).render('#paypalButtonContainer');
 }
