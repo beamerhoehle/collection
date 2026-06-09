@@ -10,6 +10,7 @@ let currentQty = 1;
 let cart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
 let activeImages = [];
 
+// App starten sobald das Dokument geladen wurde
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("App initialisiert. Starte Produkt-Download...");
     await loadProduct('beamerhoehle-tshirt-n1');
@@ -17,9 +18,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCartItems();
 });
 
-// 3. PRODUKTDATEN DYNAMISCH AUS SUPABASE LADEN
+// 2. PRODUKTDATEN DYNAMISCH AUS SUPABASE LADEN
 async function loadProduct(slug) {
-    console.log("Versuche Produkt aus Tabelle 'shirts' zu laden mit Slug:", slug);
+    console.log("Versuche Produkt zu laden mit Slug:", slug);
     
     const { data: product, error } = await supabaseClient
         .from('shirts')
@@ -34,7 +35,7 @@ async function loadProduct(slug) {
     }
 
     if (!product) {
-        console.warn('DB-Abfrage war erfolgreich, aber kein Produkt mit diesem Slug gefunden.');
+        console.warn('Kein Produkt mit diesem Slug in der DB gefunden.');
         document.getElementById('prodName').innerText = "PRODUKT LEER IN DB";
         return;
     }
@@ -42,33 +43,42 @@ async function loadProduct(slug) {
     console.log("Produkt erfolgreich geladen:", product);
 
     currentProduct = product;
-    activeImages = product.images;
+    activeImages = product.images || [];
 
+    // Titel befüllen (Zeilenumbruch bei Leerzeichen)
     document.getElementById('prodName').innerHTML = product.name.replace(/ /g, '<br>');
-    document.getElementById('prodSubtitle').innerText = product.subtitle;
+    document.getElementById('prodSubtitle').innerText = product.subtitle || '';
     document.getElementById('prodPrice').innerText = `€ ${(product.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
-    document.getElementById('prodDescription').innerText = product.description;
-    document.getElementById('prodCare').innerText = product.care_instructions;
-    document.getElementById('prodShipping').innerText = product.shipping_info;
+    document.getElementById('prodDescription').innerText = product.description || 'Keine Beschreibung vorhanden.';
+    document.getElementById('prodCare').innerText = product.care_instructions || 'Standard Wäsche.';
+    document.getElementById('prodShipping').innerText = product.shipping_info || 'Sofort versandfertig.';
 
+    // Galerie & Größen rendern
     setupGallery();
     renderSizeGrid(product.shirt_variants);
 }
 
+// 3. IMAGES-GALLERY LOGIK (DESKTOP & MOBILE)
 function setupGallery() {
     const mainImg = document.getElementById('mainImg');
     const thumbStrip = document.getElementById('thumbStrip');
     const thumbDots = document.getElementById('thumbDots');
+    
     if (!activeImages || activeImages.length === 0) return;
+    
     mainImg.src = activeImages[0];
     thumbStrip.innerHTML = '';
     thumbDots.innerHTML = '';
+    
     activeImages.forEach((imgUrl, index) => {
+        // Desktop Thumbnails
         const thumb = document.createElement('div');
         thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
         thumb.onclick = () => switchImg(index, thumb);
         thumb.innerHTML = `<img src="${imgUrl}" alt="Ansicht ${index + 1}">`;
         thumbStrip.appendChild(thumb);
+        
+        // Mobile Dots
         const dot = document.createElement('button');
         dot.className = `thumb-dot ${index === 0 ? 'active' : ''}`;
         dot.onclick = () => switchImg(index, dot);
@@ -83,10 +93,12 @@ function switchImg(index, element) {
         mainImg.src = activeImages[index];
         mainImg.classList.remove('fade');
     }, 200);
+    
     document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
     document.querySelectorAll('.thumb-dot').forEach((d, i) => d.classList.toggle('active', i === index));
 }
 
+// 4. GRÖSSEN GENERIEREN & SORTIEREN
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
     sizeGrid.innerHTML = '';
@@ -108,7 +120,7 @@ function renderSizeGrid(variants) {
             btn.disabled = true;
             btn.style.opacity = '0.3';
             btn.style.cursor = 'not-allowed';
-            btn.innerText += ' (Ausverkauft)';
+            btn.innerText += ' (Ausv.)';
         } else {
             btn.onclick = () => {
                 selectedSize = variant.size;
@@ -121,14 +133,19 @@ function renderSizeGrid(variants) {
     });
 }
 
+// 5. ANZAHL-STEUERUNG
 function changeQty(change) {
     currentQty = Math.max(1, currentQty + change);
     document.getElementById('qtyDisplay').innerText = currentQty;
 }
 
+// 6. WARENKORB INTERAKTIONEN (ÖFFNEN / SCHLIESSEN)
 function toggleCart() {
     document.getElementById('cartOverlay').classList.toggle('open');
     document.getElementById('cartPanel').classList.toggle('open');
+    if(document.getElementById('cartPanel').classList.contains('open')) {
+        showView('viewItems'); // Zurücksetzen zur Artikelliste beim Öffnen
+    }
 }
 
 function showView(viewId) {
@@ -151,12 +168,15 @@ function addToCart() {
         image: activeImages[0]
     };
     const existingIndex = cart.findIndex(item => item.id === cartItem.id && item.size === cartItem.size);
-    if (existingIndex > -1) { cart[existingIndex].qty += currentQty; } else { cart.push(cartItem); }
+    if (existingIndex > -1) { 
+        cart[existingIndex].qty += currentQty; 
+    } else { 
+        cart.push(cartItem); 
+    }
     saveCart();
     toggleCart();
 }
 
-// SPEICHERT DEN WARENKORB IM BROWSER
 function saveCart() {
     localStorage.setItem('vaux_cart', JSON.stringify(cart));
     updateCartCount();
@@ -172,15 +192,18 @@ function renderCartItems() {
     const container = document.getElementById('cartItemsContainer');
     const totalDisplay = document.getElementById('cartTotal');
     const checkoutOptions = document.getElementById('checkoutOptions');
+    
     if (cart.length === 0) {
         container.innerHTML = `<div class="cart-empty"><strong>Leergut.</strong>Dein Warenkorb ist aktuell leer.</div>`;
         totalDisplay.innerText = '€ 0,00';
         checkoutOptions.style.display = 'none';
         return;
     }
+    
     container.innerHTML = '';
     let productTotal = 0;
     let totalItemsCount = 0;
+    
     cart.forEach((item, index) => {
         productTotal += item.price * item.qty;
         totalItemsCount += item.qty;
@@ -199,16 +222,23 @@ function renderCartItems() {
                     </div>
                     <span class="cart-item-price">€ ${((item.price * item.qty) / 100).toFixed(2).replace('.', ',')}</span>
                 </div>
-                <button class="remove-item-btn" onclick="removeItem(${index})" style="margin-top:0.4rem;">Entfernen</button>
+                <button class="remove-item-btn" onclick="removeItem(${index})">Entfernen</button>
             </div>
         `;
         container.appendChild(itemEl);
     });
+    
+    // Versandkosten-Logik (Ab 2 Teilen kostenlos)
     let shippingCost = totalItemsCount >= 2 ? 0 : 299;
     const shippingEl = document.createElement('div');
-    shippingEl.style = "display:flex; justify-content:space-between; padding:0.5rem 0; font-size:0.9rem; color:#888; border-top:1px dashed #333;";
-    if (shippingCost > 0) { shippingEl.innerHTML = `<span>Versandkosten:</span><span>€ 2,99</span>`; } else { shippingEl.innerHTML = `<span>Versandkosten:</span><span style="color: #00ff66;">Kostenlos</span>`; }
+    shippingEl.style = "display:flex; justify-content:space-between; padding:0.5rem 0; font-size:0.9rem; color:#555; border-top:1px dashed #222; margin-top:1rem;";
+    if (shippingCost > 0) { 
+        shippingEl.innerHTML = `<span>Versandkosten:</span><span>€ 2,99</span>`; 
+    } else { 
+        shippingEl.innerHTML = `<span>Versandkosten:</span><span style="color: #00ff66;">Kostenlos</span>`; 
+    }
     container.appendChild(shippingEl);
+    
     let grandTotal = productTotal + shippingCost;
     totalDisplay.innerText = `€ ${(grandTotal / 100).toFixed(2).replace('.', ',')}`;
     checkoutOptions.style.display = 'grid';
@@ -225,22 +255,27 @@ function removeItem(index) {
     saveCart();
 }
 
+// 7. BESTELLUNG ABSCHICKEN (AN DIE ORDERS TABELLE)
 async function submitOrder() {
     const email = document.getElementById('pickupEmail').value.trim();
     const first = document.getElementById('pickupFirst').value.trim();
     const last = document.getElementById('pickupLast').value.trim();
+    
     document.getElementById('pickupEmailErr').classList.remove('show');
     document.getElementById('pickupFirstErr').classList.remove('show');
     document.getElementById('pickupLastErr').classList.remove('show');
+    
     let valid = true;
     if (!email || !email.includes('@')) { document.getElementById('pickupEmailErr').classList.add('show'); valid = false; }
-    if (!first) { document.getElementById('pickupFirstErr').classList.add('show'); valid = false; }
+    if (!first) { document.getElementById('pickupFirstErr').classList.add('add-btn-wrap'); valid = false; }
     if (!last) { document.getElementById('pickupLastErr').classList.add('show'); valid = false; }
     if (!valid) return;
+    
     let totalItemsCount = cart.reduce((sum, item) => sum + item.qty, 0);
     let productTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
     let shippingCost = totalItemsCount >= 2 ? 0 : 299;
     let grandTotal = productTotal + shippingCost;
+    
     const orderData = {
         email: email,
         first_name: first,
@@ -251,8 +286,15 @@ async function submitOrder() {
         cart_items: cart,
         status: 'pending'
     };
+    
     const { error } = await supabaseClient.from('orders').insert([orderData]);
-    if (error) { alert('Fehler beim Absenden der Bestellung.'); console.error(error); return; }
+    if (error) { 
+        alert('Fehler beim Absenden der Bestellung.'); 
+        console.error(error); 
+        return; 
+    }
+    
+    // Warenkorb leeren bei Erfolg
     cart = [];
     localStorage.removeItem('vaux_cart');
     updateCartCount();
