@@ -1,4 +1,4 @@
-// 1. SUPABASE INITIALISIERUNG mit deinen beamerhoehle-collection Keys
+// 1. SUPABASE INITIALISIERUNG (Exakt auf deine beamerhoehle-collection eingestellt)
 const SUPABASE_URL = 'https://kmanxvyaluledddvzdxv.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttYW54dnlhbHVsZWRkZHZ6ZHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjU5NjIsImV4cCI6MjA5NjYwMTk2Mn0.qBCdrzOo4qSbItETomTJ38Fc4gpvE4dMt5L9rYwMKq8';
 
@@ -13,8 +13,8 @@ let activeImages = [];
 
 // 2. INITIALISIERUNG BEIM SEITENSTART
 document.addEventListener('DOMContentLoaded', async () => {
-    // Holt das Shirt anhand des Slugs aus deiner DB
-    await loadProduct('statement-oversized-jacket');
+    // Holt dein echtes T-Shirt anhand des korrekten Slugs aus der Datenbank
+    await loadProduct('beamerhoehle-tshirt-n1');
     updateCartCount();
     renderCartItems();
 });
@@ -39,7 +39,7 @@ async function loadProduct(slug) {
     currentProduct = product;
     activeImages = product.images;
 
-    // Texte befüllen
+    // Texte in der HTML befüllen
     document.getElementById('prodName').innerHTML = product.name.replace(/ /g, '<br>');
     document.getElementById('prodSubtitle').innerText = product.subtitle;
     document.getElementById('prodPrice').innerText = `€ ${(product.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
@@ -47,12 +47,12 @@ async function loadProduct(slug) {
     document.getElementById('prodCare').innerText = product.care_instructions;
     document.getElementById('prodShipping').innerText = product.shipping_info;
 
-    // Galerie & Größen rendern
+    // Galerie & Größen-Buttons rendern
     setupGallery();
     renderSizeGrid(product.shirt_variants);
 }
 
-// 4. GALERIE-LOGIK (Bilder aus der Datenbank anzeigen)
+// 4. GALERIE-LOGIK (Deine zwei hochgeladenen Produktbilder anzeigen)
 function setupGallery() {
     const mainImg = document.getElementById('mainImg');
     const thumbStrip = document.getElementById('thumbStrip');
@@ -60,24 +60,24 @@ function setupGallery() {
 
     if (!activeImages || activeImages.length === 0) return;
 
-    // Hauptbild setzen
+    // Erstes Bild als Hauptbild setzen
     mainImg.src = activeImages[0];
 
     thumbStrip.innerHTML = '';
     thumbDots.innerHTML = '';
 
     activeImages.forEach((imgUrl, index) => {
-        // Thumbnails erstellen
+        // Thumbnails für Desktop erstellen
         const thumb = document.createElement('div');
         thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
         thumb.onclick = () => switchImg(index, thumb);
         thumb.innerHTML = `<img src="${imgUrl}" alt="Ansicht ${index + 1}">`;
         thumbStrip.appendChild(thumb);
 
-        // Mobile Dots erstellen
+        // Mobile Navigations-Punkte erstellen
         const dot = document.createElement('button');
         dot.className = `thumb-dot ${index === 0 ? 'active' : ''}`;
-        dot.onclick = () => switchImg(index, thumb);
+        dot.onclick = () => switchImg(index, dot);
         thumbDots.appendChild(dot);
     });
 }
@@ -91,7 +91,7 @@ function switchImg(index, element) {
         mainImg.classList.remove('fade');
     }, 200);
 
-    // Aktiven Zustand bei Thumbs und Dots aktualisieren
+    // Aktiven Zustand bei Klick visuell umschalten
     document.querySelectorAll('.thumb').forEach((t, i) => {
         t.classList.toggle('active', i === index);
     });
@@ -100,7 +100,7 @@ function switchImg(index, element) {
     });
 }
 
-// 5. GRÖSSEN-GRID RENDERN (Sicherheit: Erkennt ausverkaufte Größen live)
+// 5. GRÖSSEN-GRID RENDERN (Erkennt ausverkaufte Größen von M bis 2XL live)
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
     sizeGrid.innerHTML = '';
@@ -114,6 +114,7 @@ function renderSizeGrid(variants) {
         btn.className = 'size-btn';
         btn.innerText = variant.size;
 
+        // Falls Lagerbestand 0 oder weniger ist -> Button sperren
         if (variant.stock <= 0) {
             btn.disabled = true;
             btn.style.opacity = '0.3';
@@ -146,7 +147,7 @@ function showView(viewId) {
     document.querySelectorAll('.cart-body .view').forEach(v => v.classList.remove('active'));
     document.getElementById(viewId).classList.add('active');
     
-    // Footer-Optionen nur im Haupt-Warenkorb zeigen
+    // Die Bestelloptionen (Abholung) nur im Haupt-Warenkorb anzeigen
     document.getElementById('checkoutOptions').style.display = (viewId === 'viewItems' && cart.length > 0) ? 'grid' : 'none';
 }
 
@@ -173,10 +174,9 @@ function addToCart() {
     }
 
     saveCart();
-    toggleCart();
+    toggleCart(); // Öffnet den Warenkorb automatisch nach dem Hinzufügen
 }
 
-// Warenkorb im Browser speichern
 function saveCart() {
     localStorage.setItem('vaux_cart', JSON.stringify(cart));
     updateCartCount();
@@ -247,7 +247,7 @@ function removeItem(index) {
     saveCart();
 }
 
-// 7. BESTELLUNG SICHER AN SUPABASE SENDEN (Abholung / Bar)
+// 7. BESTELLUNG ABSENDEN (Überträgt Formulardaten & Warenkorb sicher an Supabase)
 async function submitOrder() {
     const email = document.getElementById('pickupEmail').value.trim();
     const first = document.getElementById('pickupFirst').value.trim();
@@ -287,7 +287,7 @@ async function submitOrder() {
         return;
     }
 
-    // Erfolg!
+    // Erfolg: Warenkorb leeren und den Danke-Bildschirm anzeigen
     cart = [];
     localStorage.removeItem('vaux_cart');
     updateCartCount();
