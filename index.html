@@ -1,154 +1,155 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Beamerhöhle Collection</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEAMERHÖHLE | Official Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<nav>
-  <a class="logo" href="#">BEAMERHÖHLE</a>
-  <div class="nav-right">
-    <div class="nav-links">
-      <span class="nav-link">Kollektion</span>
-    </div>
-    <button class="cart-btn" onclick="toggleCart()">
-      Warenkorb <span class="cart-count" id="cartCount">0</span>
-    </button>
-  </div>
-</nav>
-
-<div class="product-wrap">
-
-  <div class="gallery">
-    <div class="gallery-label">COLLECTION</div>
-    <img class="gallery-main" id="mainImg" src="" alt="Produktansicht">
-    <div class="thumb-strip" id="thumbStrip"></div>
-    <div class="thumb-dots" id="thumbDots"></div>
-  </div>
-
-  <div class="product-info">
-    <p class="category-tag" id="prodCategory">Kollektion N°3</p>
-    <h1 class="product-name" id="prodName">Lade...</h1>
-    <p class="product-subtitle" id="prodSubtitle"></p>
-    <div class="divider"></div>
-
-    <div class="price-row">
-      <span class="price-main" id="prodPrice">€ 0,00</span>
-      <span class="price-note">inkl. MwSt.</span>
-    </div>
-
-    <p class="section-label">Größe wählen</p>
-    <div class="size-grid" id="sizeGrid"></div>
-
-    <p class="error-msg" id="sizeError">Bitte wähle eine Größe aus.</p>
-
-    <p class="section-label">Anzahl</p>
-    <div class="qty-row">
-      <button class="qty-btn" onclick="changeQty(-1)" aria-label="Weniger">−</button>
-      <span id="qtyDisplay">1</span>
-      <button class="qty-btn" onclick="changeQty(1)" aria-label="Mehr">+</button>
-    </div>
-
-    <div class="add-btn-wrap">
-      <button class="add-btn" onclick="addToCart()"><span>In den Warenkorb</span></button>
-    </div>
-
-    <details open>
-      <summary>Produktdetails</summary>
-      <p id="prodDescription">Lade Beschreibung...</p>
-    </details>
-    <details>
-      <summary>Pflege & Material</summary>
-      <p id="prodCare">Lade pflegehinweise...</p>
-    </details>
-    <details>
-      <summary>Versand & Rückgabe</summary>
-      <p id="prodShipping">Lade Versandinfos...</p>
-    </details>
-  </div>
-</div>
-
-<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
-
-<div class="cart-panel" id="cartPanel">
-  <div class="cart-header">
-    <span class="cart-title">Warenkorb</span>
-    <button class="close-btn" onclick="toggleCart()" aria-label="Schließen">×</button>
-  </div>
-  <div class="cart-body" id="cartBody">
-
-    <div class="view active" id="viewItems">
-      <div id="cartItemsContainer"></div>
-    </div>
-
-    <div class="view" id="viewPickup">
-      <div class="checkout-form">
-        <button class="back-link" onclick="showView('viewItems')">← Zurück</button>
-        <h2>Abholung / Bar</h2>
-        <p class="form-sub">Kein Versand — du holst ab oder zahlst bar vor Ort.</p>
-        <div id="orderSummaryPickup"></div>
-        <div class="form-row full">
-          <div class="form-group">
-            <label>E-Mail-Adresse <span class="req">*</span></label>
-            <input type="email" id="pickupEmail" placeholder="deine@email.de" autocomplete="email">
-            <span class="form-error" id="pickupEmailErr">Bitte gib eine gültige E-Mail-Adresse ein.</span>
-          </div>
+    <nav>
+        <a href="#" class="logo">BEAMERHÖHLE</a>
+        <div class="nav-right">
+            <span class="nav-link">Kollektion</span>
+            <button class="cart-btn" onclick="toggleCart()">
+                Warenkorb <span class="cart-count" id="cartCount">0</span>
+            </button>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Vorname <span class="req">*</span></label>
-            <input type="text" id="pickupFirst" placeholder="Max" autocomplete="given-name">
-            <span class="form-error" id="pickupFirstErr">Pflichtfeld</span>
-          </div>
-          <div class="form-group">
-            <label>Nachname <span class="req">*</span></label>
-            <input type="text" id="pickupLast" placeholder="Mustermann" autocomplete="family-name">
-            <span class="form-error" id="pickupLastErr">Pflichtfeld</span>
-          </div>
+    </nav>
+
+    <main class="product-wrap">
+        
+        <section class="gallery">
+            <span class="gallery-label">Kollektion N°1</span>
+            <img id="mainImg" class="gallery-main" src="" alt="Produktansicht">
+            
+            <div id="thumbStrip" class="thumb-strip"></div>
+            
+            <div id="thumbDots" class="thumb-dots"></div>
+        </section>
+
+        <section class="product-info">
+            <span class="category-tag">Kollektion N°1</span>
+            <h1 id="prodName" class="product-name">Lade Produkt...</h1>
+            <p id="prodSubtitle" class="product-subtitle"></p>
+            
+            <div class="divider"></div>
+
+            <div class="price-row">
+                <span id="prodPrice" class="price-main">€ 0,00</span>
+                <span class="price-note">inkl. MwSt.</span>
+            </div>
+
+            <div class="section-label">Größe wählen</div>
+            <div id="sizeGrid" class="size-grid">
+                </div>
+            <div id="sizeError" class="error-msg">Bitte wähle zuerst eine Größe aus.</div>
+
+            <div class="section-label">Anzahl</div>
+            <div class="qty-row">
+                <button class="qty-btn" onclick="changeQty(-1)">−</button>
+                <span id="qtyDisplay">1</span>
+                <button class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+
+            <div class="add-btn-wrap">
+                <button class="add-btn" onclick="addToCart()">In den Warenkorb</button>
+            </div>
+
+            <details open>
+                <summary>Beschreibung</summary>
+                <p id="prodDescription"></p>
+            </details>
+            <details>
+                <summary>Pflegehinweise</summary>
+                <p id="prodCare"></p>
+            </details>
+            <details>
+                <summary>Versand & Abholung</summary>
+                <p id="prodShipping"></p>
+            </details>
+        </section>
+    </main>
+
+    <div id="cartOverlay" class="cart-overlay" onclick="toggleCart()"></div>
+    <div id="cartPanel" class="cart-panel">
+        
+        <div class="cart-header">
+            <span class="cart-title">Warenkorb</span>
+            <button class="close-btn" onclick="toggleCart()">×</button>
         </div>
-        <button class="pay-btn" onclick="submitOrder()">Bestellung verbindlich absenden</button>
-        <p class="shipping-note">Keine Versandkosten. Abholadresse wird per E-Mail mitgeteilt.</p>
-      </div>
+
+        <div class="cart-body">
+            
+            <div id="viewItems" class="view active">
+                <div id="cartItemsContainer">
+                    </div>
+            </div>
+
+            <div id="viewCheckout" class="view checkout-form">
+                <button class="back-link" onclick="showView('viewItems')">← Zurück zum Warenkorb</button>
+                <h2>Bestelldetails</h2>
+                <p class="form-sub">Bitte fülle die Felder aus, um die Bestellung abzuschließen.</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pickupFirst">Vorname <span class="req">*</span></label>
+                        <input type="text" id="pickupFirst" placeholder="Max">
+                        <div id="pickupFirstErr" class="form-error">Vorname erforderlich.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pickupLast">Nachname <span class="req">*</span></label>
+                        <input type="text" id="pickupLast" placeholder="Mustermann">
+                        <div id="pickupLastErr" class="form-error">Nachname erforderlich.</div>
+                    </div>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label for="pickupEmail">E-Mail-Adresse <span class="req">*</span></label>
+                        <input type="email" id="pickupEmail" placeholder="max@mustermann.de">
+                        <div id="pickupEmailErr" class="form-error">Gültige E-Mail erforderlich.</div>
+                    </div>
+                </div>
+
+                <button class="pay-btn" onclick="submitOrder()">Verbindlich Bestellen</button>
+                <p class="shipping-note">Bezahlung erfolgt bar bei Abholung.</p>
+            </div>
+
+            <div id="viewSuccess" class="view success-view">
+                <div class="success-icon">✓</div>
+                <h2>Danke!</h2>
+                <p>Deine Bestellung wurde erfolgreich übermittelt.<br>Du erhältst in Kürze alle weiteren Details per E-Mail.</p>
+            </div>
+
+        </div>
+
+        <div class="cart-footer">
+            <div class="cart-total-row">
+                <span class="total-label">Gesamtsumme:</span>
+                <span id="cartTotal" class="total-amount">€ 0,00</span>
+            </div>
+            
+            <div id="checkoutOptions" class="checkout-options">
+                <button class="checkout-opt-btn" onclick="showView('viewCheckout')">
+                    <span class="opt-icon">🏪</span>
+                    <span class="opt-label">Abholung</span>
+                    <span class="opt-sub">Barzahlung vor Ort</span>
+                </button>
+                <button class="checkout-opt-btn" disabled style="opacity: 0.4; cursor: not-allowed;">
+                    <span class="opt-icon">💳</span>
+                    <span class="opt-label">Online</span>
+                    <span class="opt-sub">Demnächst verfügbar</span>
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div class="view" id="viewSuccess">
-      <div class="success-view">
-        <div class="success-icon">✓</div>
-        <h2>Danke!</h2>
-        <p>Deine Bestellung ist eingegangen.<br>Wir prüfen den Lagerbestand und melden uns umgehend per E-Mail.</p>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="cart-footer" id="cartFooter">
-    <div class="cart-total-row">
-      <span class="total-label">Gesamt</span>
-      <span class="total-amount" id="cartTotal">€ 0,00</span>
-    </div>
-    <div class="checkout-options" id="checkoutOptions" style="display: none;">
-      <button class="checkout-opt-btn" onclick="showView('viewPickup')">
-        <span class="opt-icon">🏬</span>
-        <span class="opt-label">Abholung</span>
-        <span class="opt-sub">Bar / Vor Ort</span>
-      </button>
-      <button class="checkout-opt-btn" style="opacity: 0.5; cursor: not-allowed;" disabled>
-        <span class="opt-icon">💳</span>
-        <span class="opt-label">Online</span>
-        <span class="opt-sub">Bald verfügbar</span>
-      </button>
-    </div>
-  </div>
-</div>
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
 </body>
 </html>
