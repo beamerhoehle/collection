@@ -825,3 +825,14 @@ details p {
     grid-template-columns: 1fr;
   }
 }
+/* Ergänzungen für die dynamischen Versandfelder */
+#shippingAddressFields {
+  border-top: 1px dashed #222;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+}
+
+#paypalButtonContainer {
+  z-index: 10;
+  position: relative;
+}
