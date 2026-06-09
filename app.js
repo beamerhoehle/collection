@@ -11,6 +11,7 @@ let cart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
 let activeImages = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log("App initialisiert. Starte Produkt-Download...");
     await loadProduct('beamerhoehle-tshirt-n1');
     updateCartCount();
     renderCartItems();
@@ -18,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // 3. PRODUKTDATEN DYNAMISCH AUS SUPABASE LADEN
 async function loadProduct(slug) {
-    console.log("Versuche Produkt zu laden...", slug);
+    console.log("Versuche Produkt aus Tabelle 'shirts' zu laden mit Slug:", slug);
     
     const { data: product, error } = await supabaseClient
         .from('shirts')
@@ -27,15 +28,18 @@ async function loadProduct(slug) {
         .single();
 
     if (error) {
-        console.error('Supabase Fehler Details:', error);
+        console.error('Kritischer Supabase Fehler:', error);
         document.getElementById('prodName').innerHTML = `FEHLER:<br><span style="font-size:1.5rem; color:red; font-family:sans-serif;">${error.message} (${error.code})</span>`;
         return;
     }
 
     if (!product) {
+        console.warn('DB-Abfrage war erfolgreich, aber kein Produkt mit diesem Slug gefunden.');
         document.getElementById('prodName').innerText = "PRODUKT LEER IN DB";
         return;
     }
+
+    console.log("Produkt erfolgreich geladen:", product);
 
     currentProduct = product;
     activeImages = product.images;
@@ -152,6 +156,7 @@ function addToCart() {
     toggleCart();
 }
 
+// SPEICHERT DEN WARENKORB IM BROWSER
 function saveCart() {
     localStorage.setItem('vaux_cart', JSON.stringify(cart));
     updateCartCount();
