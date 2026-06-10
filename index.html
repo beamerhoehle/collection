@@ -16,23 +16,24 @@
         <div class="nav-actions">
             <span class="nav-tag">Kollektion N°3</span>
             <button class="modern-cart-btn" onclick="toggleCart()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
                 <span class="cart-badge" id="cartCount">0</span>
             </button>
         </div>
     </nav>
 
     <main class="store-container">
-        
+
         <section class="slider-section">
             <div class="carousel-viewport">
-                <div class="carousel-track" id="carouselTrack">
-                    </div>
-                
+                <div class="carousel-track" id="carouselTrack"></div>
                 <button class="slider-arrow prev" onclick="moveSlider(-1)">⟨</button>
                 <button class="slider-arrow next" onclick="moveSlider(1)">⟩</button>
             </div>
-            
             <div class="carousel-dots" id="carouselDots"></div>
         </section>
 
@@ -98,92 +99,140 @@
         </section>
     </main>
 
+    <!-- CART OVERLAY & DRAWER -->
     <div id="cartOverlay" class="glass-overlay" onclick="toggleCart()"></div>
     <div id="cartPanel" class="side-drawer">
+
         <div class="drawer-header">
             <h3>Dein Warenkorb</h3>
             <button class="close-drawer" onclick="toggleCart()">×</button>
         </div>
 
         <div class="drawer-body">
+
+            <!-- VIEW 1: CART ITEMS -->
             <div id="viewItems" class="drawer-view active">
                 <div id="cartItemsContainer"></div>
             </div>
 
-            <div id="viewCheckout" class="drawer-view checkout-scroll">
-                <button class="back-btn" onclick="showView('viewItems')">← Zurück zur Übersicht</button>
-                <h4 id="checkoutTitle" class="checkout-title">Bestelldetails</h4>
-                
-                <div id="pickupPaymentSelect" class="form-card" style="display: none;">
-                    <label class="form-label">Zahlungsart vor Ort</label>
-                    <div class="radio-tile-group">
-                        <label class="radio-tile">
-                            <input type="radio" name="pickupPayment" value="Bar" checked onchange="updatePickupPaymentNote()">
-                            <span class="tile-content">💵 Barzahlung</span>
-                        </label>
-                        <label class="radio-tile">
-                            <input type="radio" name="pickupPayment" value="PayPal" onchange="updatePickupPaymentNote()">
-                            <span class="tile-content">💳 PayPal vor Ort</span>
-                        </label>
-                    </div>
-                </div>
+            <!-- VIEW 2a: CHECKOUT — ABHOLUNG -->
+            <div id="viewCheckoutPickup" class="drawer-view">
+                <div class="checkout-scroll">
+                    <button class="back-btn" onclick="showView('viewItems')">← Zurück zur Übersicht</button>
+                    <h4 class="checkout-title">🏪 Abholung vor Ort</h4>
 
-                <div class="form-grid">
-                    <div class="input-group">
-                        <label>Vorname</label>
-                        <input type="text" id="custFirst" placeholder="Max">
-                        <div id="custFirstErr" class="field-error">Erforderlich</div>
-                    </div>
-                    <div class="input-group">
-                        <label>Nachname</label>
-                        <input type="text" id="custLast" placeholder="Mustermann">
-                        <div id="custLastErr" class="field-error">Erforderlich</div>
-                    </div>
-                </div>
-
-                <div class="input-group full">
-                    <label>E-Mail-Adresse</label>
-                    <input type="email" id="custEmail" placeholder="max@mustermann.de">
-                    <div id="custEmailErr" class="field-error">Gültige E-Mail erforderlich</div>
-                </div>
-
-                <div id="shippingAddressFields" class="form-card" style="display: none;">
-                    <div class="input-group full">
-                        <label>Straße & Hausnummer</label>
-                        <input type="text" id="custStreet" placeholder="Hauptstraße 12">
-                        <div id="custStreetErr" class="field-error">Adresse erforderlich</div>
-                    </div>
-                    <div class="form-grid">
-                        <div class="input-group">
-                            <label>PLZ</label>
-                            <input type="text" id="custZip" placeholder="12345">
-                            <div id="custZipErr" class="field-error">PLZ fehlt</div>
-                        </div>
-                        <div class="input-group">
-                            <label>Ort</label>
-                            <input type="text" id="custCity" placeholder="Musterstadt">
-                            <div id="custCityErr" class="field-error">Ort fehlt</div>
+                    <!-- Zahlungsart -->
+                    <div class="form-card">
+                        <span class="form-label">Zahlungsart bei Abholung</span>
+                        <div class="radio-tile-group">
+                            <label class="radio-tile">
+                                <input type="radio" name="pickupPayment" value="Bar" checked onchange="updatePickupPaymentNote()">
+                                <span class="tile-content">💵 Barzahlung</span>
+                            </label>
+                            <label class="radio-tile">
+                                <input type="radio" name="pickupPayment" value="PayPal" onchange="updatePickupPaymentNote()">
+                                <span class="tile-content">💳 PayPal vor Ort</span>
+                            </label>
                         </div>
                     </div>
-                </div>
 
-                <button id="standardSubmitBtn" class="action-btn-primary checkout-trigger" onclick="submitOrder()">Kauf abschließen</button>
-                <p id="paymentNote" class="checkout-footer-note"></p>
+                    <!-- Kontaktdaten -->
+                    <div class="form-card">
+                        <span class="form-label">Deine Kontaktdaten</span>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label>Vorname</label>
+                                <input type="text" id="pickupFirst" placeholder="Max">
+                                <div id="pickupFirstErr" class="field-error">Erforderlich</div>
+                            </div>
+                            <div class="input-group">
+                                <label>Nachname</label>
+                                <input type="text" id="pickupLast" placeholder="Mustermann">
+                                <div id="pickupLastErr" class="field-error">Erforderlich</div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>E-Mail-Adresse</label>
+                            <input type="email" id="pickupEmail" placeholder="max@mustermann.de">
+                            <div id="pickupEmailErr" class="field-error">Gültige E-Mail erforderlich</div>
+                        </div>
+                    </div>
+
+                    <button id="pickupSubmitBtn" class="action-btn-primary checkout-trigger" onclick="submitOrder()">Verbindlich Reservieren</button>
+                    <p id="paymentNote" class="checkout-footer-note">Bezahlung erfolgt bar bei Abholung.</p>
+                </div>
             </div>
 
+            <!-- VIEW 2b: CHECKOUT — VERSAND -->
+            <div id="viewCheckoutShipping" class="drawer-view">
+                <div class="checkout-scroll">
+                    <button class="back-btn" onclick="showView('viewItems')">← Zurück zur Übersicht</button>
+                    <h4 class="checkout-title">📦 Lieferadresse</h4>
+
+                    <!-- Kontaktdaten -->
+                    <div class="form-card">
+                        <span class="form-label">Deine Kontaktdaten</span>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label>Vorname</label>
+                                <input type="text" id="shipFirst" placeholder="Max">
+                                <div id="shipFirstErr" class="field-error">Erforderlich</div>
+                            </div>
+                            <div class="input-group">
+                                <label>Nachname</label>
+                                <input type="text" id="shipLast" placeholder="Mustermann">
+                                <div id="shipLastErr" class="field-error">Erforderlich</div>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>E-Mail-Adresse</label>
+                            <input type="email" id="shipEmail" placeholder="max@mustermann.de">
+                            <div id="shipEmailErr" class="field-error">Gültige E-Mail erforderlich</div>
+                        </div>
+                    </div>
+
+                    <!-- Lieferadresse -->
+                    <div class="form-card">
+                        <span class="form-label">Lieferadresse</span>
+                        <div class="input-group">
+                            <label>Straße & Hausnummer</label>
+                            <input type="text" id="custStreet" placeholder="Hauptstraße 12">
+                            <div id="custStreetErr" class="field-error">Adresse erforderlich</div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label>PLZ</label>
+                                <input type="text" id="custZip" placeholder="12345">
+                                <div id="custZipErr" class="field-error">PLZ fehlt</div>
+                            </div>
+                            <div class="input-group">
+                                <label>Ort</label>
+                                <input type="text" id="custCity" placeholder="Musterstadt">
+                                <div id="custCityErr" class="field-error">Ort fehlt</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="shippingSubmitBtn" class="action-btn-primary checkout-trigger" onclick="submitOrder()">Zu PayPal & Bestellen</button>
+                    <p class="checkout-footer-note">Zahlung erfolgt direkt via PayPal.me.</p>
+                </div>
+            </div>
+
+            <!-- VIEW 3: SUCCESS -->
             <div id="viewSuccess" class="drawer-view success-pane">
                 <div class="success-ring">✓</div>
                 <h2>Bestellung erhalten!</h2>
                 <p id="successMsg"></p>
             </div>
-        </div>
+
+        </div><!-- /drawer-body -->
 
         <div class="drawer-footer">
             <div class="summary-row">
                 <span>Gesamtsumme</span>
                 <span id="cartTotal" class="price">€ 0,00</span>
             </div>
-            <div id="checkoutOptions" class="checkout-actions-grid">
+            <div id="checkoutOptions" class="checkout-actions-grid" style="display:none;">
                 <button class="method-btn" onclick="startCheckout('pickup')">
                     <span class="icon">🏪</span>
                     <span class="lbl">Abholung</span>
@@ -194,7 +243,8 @@
                 </button>
             </div>
         </div>
-    </div>
+
+    </div><!-- /side-drawer -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
