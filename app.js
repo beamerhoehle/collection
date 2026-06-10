@@ -10,7 +10,16 @@ let currentProduct = null;
 let selectedSize = null;
 let currentQty = 1;
 let currentSlideIndex = 0;
-let cart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
+// Alte Cart-Einträge mit 'id' statt 'product_id' migrieren
+let rawCart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
+rawCart = rawCart.map(item => {
+    if (item.id && !item.product_id) {
+        item.product_id = item.id;
+        delete item.id;
+    }
+    return item;
+});
+let cart = rawCart;
 let currentDeliveryMethod = 'pickup';
 
 const activeImages = [
@@ -176,7 +185,7 @@ function addToCart() {
         return;
     }
     const item = {
-        id: currentProduct.id,
+        product_id: currentProduct.id,
         name: currentProduct.name,
         size: selectedSize,
         price: currentProduct.price_in_cents,
@@ -184,7 +193,7 @@ function addToCart() {
         image: activeImages[0]
     };
 
-    const findIdx = cart.findIndex(c => c.id === item.id && c.size === item.size);
+    const findIdx = cart.findIndex(c => c.product_id === item.product_id && c.size === item.size);
     if (findIdx > -1) {
         cart[findIdx].qty += currentQty;
     } else {
