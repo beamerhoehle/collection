@@ -271,7 +271,7 @@ body {
 
 .modern-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
 }
 
@@ -279,12 +279,16 @@ body {
     background: transparent;
     border: 1px solid var(--border-color);
     color: #fff;
-    padding: 1rem 0;
+    padding: 0.6rem 0.25rem;
     font-size: 0.9rem;
     font-weight: 600;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
 }
 
 .size-tile:hover:not(:disabled) {
@@ -298,10 +302,39 @@ body {
     border-color: #fff;
 }
 
-.size-tile:disabled {
-    opacity: 0.2;
+.size-tile.selected .stock-label {
+    color: #555;
+}
+
+.size-tile.low-stock {
+    border-color: #ff9f0a;
+}
+
+.size-tile.sold-out {
+    opacity: 0.25;
     cursor: not-allowed;
-    text-decoration: line-through;
+}
+
+.size-tile:disabled {
+    cursor: not-allowed;
+}
+
+.size-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.stock-label {
+    font-size: 0.6rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.stock-low {
+    color: #ff9f0a;
 }
 
 .modern-error {
