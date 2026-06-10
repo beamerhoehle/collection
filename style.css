@@ -86,7 +86,7 @@ nav {
   border-radius: 20px;
 }
 
-/* 3. PRODUCT LAYOUT & MODERN SLIDER CONTAINER */
+/* 3. PRODUCT LAYOUT */
 .product-wrap {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -116,95 +116,57 @@ nav {
   text-transform: uppercase;
 }
 
-/* Der neue Slider-Kanal maskiert graue Mockup-Ecken perfekt durch border-radius */
-.slider-container {
-  position: relative;
-  width: 100%;
-  max-width: 550px;
-  aspect-ratio: 1 / 1;
-  overflow: hidden; 
-  border-radius: 24px; /* Hochmoderne, extrem weiche Eckenabrundung */
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-}
-
-.slider-wrapper {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
 .gallery-main {
   width: 100%;
-  height: 100%;
-  flex-shrink: 0;
-  object-fit: cover; /* Verhindert Verzerrungen und füllt den abgerundeten Rahmen */
+  max-width: 550px;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
   background: transparent;
-  transition: opacity 0.2s ease;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.gallery-main:hover {
+  transform: scale(1.02);
 }
 
 .gallery-main.fade {
   opacity: 0.3;
 }
 
-/* Slider-Pfeile, die sich beim Hovern über den Container einblenden */
-.slider-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  font-size: 1.2rem;
-  cursor: pointer;
+.thumb-strip {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
-  opacity: 0; 
-  transition: all 0.3s ease;
-}
-
-.slider-container:hover .slider-arrow {
-  opacity: 1;
-}
-
-.slider-arrow:hover {
-  background: #fff;
-  color: #000;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-}
-
-.slider-arrow.prev { left: 1.5rem; }
-.slider-arrow.next { right: 1.5rem; }
-
-/* Schicke, flüssig animierte Punkte unter dem Slider */
-.slider-dots {
-  display: flex;
-  justify-content: center;
-  gap: 0.6rem;
+  gap: 1rem;
   margin-top: 2rem;
 }
 
-.slider-dot {
-  width: 8px;
-  height: 8px;
-  background: #222;
-  border: none;
-  border-radius: 50%;
+.thumb {
+  width: 75px;
+  height: 75px;
+  border: 1px solid #222;
   cursor: pointer;
-  padding: 0;
+  padding: 0.3rem;
+  background: transparent;
+  border-radius: 12px;
   transition: all 0.3s ease;
 }
 
-.slider-dot.active {
-  background: #fff;
-  width: 24px;
-  border-radius: 4px;
+.thumb:hover, .thumb.active {
+  border-color: #fff;
+  transform: translateY(-2px);
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.thumb-dots {
+  display: none;
 }
 
 /* PRODUCT INFO SIDE */
@@ -313,7 +275,7 @@ nav {
   display: block;
 }
 
-/* QUANTITY */
+/* QUANTITY COUNTER */
 .qty-row {
   display: flex;
   align-items: center;
@@ -424,7 +386,7 @@ details p {
   line-height: 1.6;
 }
 
-/* 4. WARENKORB PANELS (KEINE SCROLLBALKEN) */
+/* 4. WARENKORB PANELS */
 .cart-overlay {
   position: fixed;
   top: 0;
@@ -524,7 +486,7 @@ details p {
   margin-bottom: 0.5rem;
 }
 
-/* SHOPPING CART ITEM */
+/* WARENKORB ITEMS */
 .cart-item {
   display: flex;
   gap: 1.5rem;
@@ -536,10 +498,11 @@ details p {
 .cart-item-img {
   width: 80px;
   height: 80px;
-  object-fit: cover; /* Maskiert Bildkanten im Warenkorb */
-  background: #141414;
+  object-fit: contain;
+  background: transparent;
   border: 1px solid #1a1a1a;
-  border-radius: 12px; /* Perfekte Abrundung für das Produktbild im Checkout */
+  padding: 0.2rem;
+  border-radius: 12px;
 }
 
 .cart-item-info {
@@ -826,37 +789,51 @@ details p {
   padding-top: 1rem;
 }
 
-/* 5. MOBILE & TABLET OPTIMIERUNG */
+/* 5. RESPONSIVE MEDIA QUERIES */
 @media (max-width: 968px) {
   .product-wrap {
     grid-template-columns: 1fr;
   }
-
   .gallery {
     padding: 2rem 1rem;
     border-right: none;
     border-bottom: 1px solid #1a1a1a;
   }
-
-  .slider-container {
+  .gallery-main {
     max-width: 100%;
-    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: none;
   }
-
-  .slider-arrow {
-    opacity: 1; /* Pfeile bleiben auf Mobilgeräten sichtbar */
-    width: 42px;
-    height: 42px;
+  .thumb-strip {
+    display: none;
   }
-
+  .thumb-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+  .thumb-dot {
+    width: 8px;
+    height: 8px;
+    background: #333;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+  }
+  .thumb-dot.active {
+    background: #fff;
+    width: 20px;
+    border-radius: 4px;
+    transition: all 0.3s;
+  }
   .product-info {
     padding: 3rem 1.5rem;
   }
-
   .product-name {
     font-size: 3.5rem;
   }
-
   .size-grid {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -866,23 +843,18 @@ details p {
   nav {
     padding: 1rem;
   }
-  
   .logo {
     font-size: 1.6rem;
   }
-  
   .product-name {
     font-size: 2.8rem;
   }
-
   .size-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
   .cart-panel {
     max-width: 100%;
   }
-  
   .checkout-options {
     grid-template-columns: 1fr;
   }
