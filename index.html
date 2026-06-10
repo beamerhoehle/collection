@@ -3,186 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BEAMERHÖHLE | Official Store</title>
+    <title>BEAMERHÖHLE | Premium Store</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <nav>
-        <a href="#" class="logo">BEAMERHÖHLE</a>
-        <div class="nav-right">
-            <span class="nav-link">Kollektion</span>
-            <button class="cart-btn" onclick="toggleCart()">
-                Warenkorb <span class="cart-count" id="cartCount">0</span>
+    <nav class="navbar">
+        <a href="#" class="brand-logo">BEAMERHÖHLE</a>
+        <div class="nav-actions">
+            <span class="nav-tag">Kollektion N°3</span>
+            <button class="modern-cart-btn" onclick="toggleCart()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                <span class="cart-badge" id="cartCount">0</span>
             </button>
         </div>
     </nav>
 
-    <main class="product-wrap">
+    <main class="store-container">
         
-        <section class="gallery">
-            <span class="gallery-label">Kollektion N°3</span>
-            <img id="mainImg" class="gallery-main" src="" alt="Produktansicht">
+        <section class="slider-section">
+            <div class="carousel-viewport">
+                <div class="carousel-track" id="carouselTrack">
+                    </div>
+                
+                <button class="slider-arrow prev" onclick="moveSlider(-1)">⟨</button>
+                <button class="slider-arrow next" onclick="moveSlider(1)">⟩</button>
+            </div>
             
-            <div id="thumbStrip" class="thumb-strip"></div>
-            <div id="thumbDots" class="thumb-dots"></div>
+            <div class="carousel-dots" id="carouselDots"></div>
         </section>
 
-        <section class="product-info">
-            <span class="category-tag">Kollektion N°3</span>
-            <h1 id="prodName" class="product-name">Lade Produkt...</h1>
-            <p id="prodSubtitle" class="product-subtitle"></p>
-            
-            <div class="divider"></div>
-
-            <div class="price-row">
-                <span id="prodPrice" class="price-main">€ 0,00</span>
-                <span class="price-note">inkl. MwSt.</span>
+        <section class="details-section">
+            <div class="product-header">
+                <span class="collection-badge">Limitiert • Drop N°3</span>
+                <h1 id="prodName" class="hero-title">Kollektion N°3 T-Shirt</h1>
+                <p id="prodSubtitle" class="hero-subtitle">Premium Heavyweight Cotton Tee</p>
             </div>
 
-            <div class="section-label">Größe wählen</div>
-            <div id="sizeGrid" class="size-grid"></div>
-            <div id="sizeError" class="error-msg">Bitte wähle zuerst eine Größe aus.</div>
-
-            <div class="section-label">Anzahl</div>
-            <div class="qty-row">
-                <button class="qty-btn" onclick="changeQty(-1)">−</button>
-                <span id="qtyDisplay">1</span>
-                <button class="qty-btn" onclick="changeQty(1)">+</button>
+            <div class="price-card">
+                <div class="price-wrapper">
+                    <span id="prodPrice" class="price-tag">€ 0,00</span>
+                    <span class="tax-info">inkl. MwSt., zzgl. Versand</span>
+                </div>
             </div>
 
-            <div class="add-btn-wrap">
-                <button class="add-btn" onclick="addToCart()">In den Warenkorb</button>
+            <div class="interactive-block">
+                <div class="block-header">
+                    <span>Größe wählen</span>
+                    <span id="selectedSizeLabel" class="selected-indicator">—</span>
+                </div>
+                <div id="sizeGrid" class="modern-grid"></div>
+                <div id="sizeError" class="modern-error">Bitte wähle eine Größe aus, bevor du fortfährst.</div>
             </div>
 
-            <details open>
-                <summary>Beschreibung</summary>
-                <p id="prodDescription">
-                    Schmaler Kragen aus Rippstrick<br>
-                    Strapazierfähiger Stoff mit weicher und ebenmäßiger Oberfläche<br>
-                    Einlaufvorbehandelt<br>
-                    Zeitgemäße Passform mit schlauchförmigem Schnitt<br><br>
-                    185 g/m², 100 % ringgesponnene Baumwolle
-                </p>
-            </details>
-            <details>
-                <summary>Pflegehinweise</summary>
-                <p id="prodCare">Waschbar bis 40 °C, trocknergeeignet.</p>
-            </details>
-            <details>
-                <summary>Versand & Abholung</summary>
-                <p id="prodShipping">Kostenlose Abholung vor Ort oder schneller DHL-Versand (kostenlos ab 2 Artikeln).</p>
-            </details>
+            <div class="purchase-row">
+                <div class="modern-qty">
+                    <button onclick="changeQty(-1)">−</button>
+                    <span id="qtyDisplay">1</span>
+                    <button onclick="changeQty(1)">+</button>
+                </div>
+                <button class="action-btn-primary" onclick="addToCart()">
+                    <span>In den Warenkorb</span>
+                </button>
+            </div>
+
+            <div class="accordion-group">
+                <details open>
+                    <summary>Produktdetails</summary>
+                    <div class="details-content">
+                        <p>• Schmaler Kragen aus edlem Rippstrick</p>
+                        <p>• Äußerst strapazierfähiger, schwerer Premium-Stoff</p>
+                        <p>• Extrem weiche und ebenmäßige Oberflächenstruktur</p>
+                        <p>• Einlaufvorbehandelt für langanhaltende Passform</p>
+                        <p class="spec-text">185 g/m², 100% ringgesponnene Baumwolle</p>
+                    </div>
+                </details>
+                <details>
+                    <summary>Pflegehinweise</summary>
+                    <div class="details-content">
+                        <p>Schonwaschgang bis 40 °C. Nicht heiß bügeln. Trocknergeeignet bei niedriger Temperatur.</p>
+                    </div>
+                </details>
+                <details>
+                    <summary>Versand & Abholung</summary>
+                    <div class="details-content">
+                        <p>🏪 <strong>Abholung vor Ort:</strong> Kostenlos in der Beamerhöhle.</p>
+                        <p>📦 <strong>DHL-Versand:</strong> Schneller Versand direkt zu dir (Kostenlos ab 2 Artikeln).</p>
+                    </div>
+                </details>
+            </div>
         </section>
     </main>
 
-    <div id="cartOverlay" class="cart-overlay" onclick="toggleCart()"></div>
-    <div id="cartPanel" class="cart-panel">
-        
-        <div class="cart-header">
-            <span class="cart-title">Warenkorb</span>
-            <button class="close-btn" onclick="toggleCart()">×</button>
+    <div id="cartOverlay" class="glass-overlay" onclick="toggleCart()"></div>
+    <div id="cartPanel" class="side-drawer">
+        <div class="drawer-header">
+            <h3>Dein Warenkorb</h3>
+            <button class="close-drawer" onclick="toggleCart()">×</button>
         </div>
 
-        <div class="cart-body">
-            
-            <div id="viewItems" class="view active">
+        <div class="drawer-body">
+            <div id="viewItems" class="drawer-view active">
                 <div id="cartItemsContainer"></div>
             </div>
 
-            <div id="viewCheckout" class="view checkout-form">
-                <button class="back-link" onclick="showView('viewItems')">← Zurück</button>
-                <h2 id="checkoutTitle">Bestelldetails</h2>
-                <p class="form-sub">Bitte fülle die Felder aus, um fortzufahren.</p>
+            <div id="viewCheckout" class="drawer-view checkout-scroll">
+                <button class="back-btn" onclick="showView('viewItems')">← Zurück zur Übersicht</button>
+                <h4 id="checkoutTitle" class="checkout-title">Bestelldetails</h4>
                 
-                <div id="pickupPaymentSelect" class="form-row full" style="margin-bottom: 1.5rem; display: none;">
-                    <div class="form-group">
-                        <label>Zahlungsart vor Ort <span class="req">*</span></label>
-                        <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem;">
-                            <label style="color: #fff; font-size: 0.9rem; text-transform: none; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                <input type="radio" name="pickupPayment" value="Bar" checked onchange="updatePickupPaymentNote()"> 💵 Bar bei Abholung
-                            </label>
-                            <label style="color: #fff; font-size: 0.9rem; text-transform: none; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                <input type="radio" name="pickupPayment" value="PayPal" onchange="updatePickupPaymentNote()"> 💳 PayPal vor Ort
-                            </label>
-                        </div>
+                <div id="pickupPaymentSelect" class="form-card" style="display: none;">
+                    <label class="form-label">Zahlungsart vor Ort</label>
+                    <div class="radio-tile-group">
+                        <label class="radio-tile">
+                            <input type="radio" name="pickupPayment" value="Bar" checked onchange="updatePickupPaymentNote()">
+                            <span class="tile-content">💵 Barzahlung</span>
+                        </label>
+                        <label class="radio-tile">
+                            <input type="radio" name="pickupPayment" value="PayPal" onchange="updatePickupPaymentNote()">
+                            <span class="tile-content">💳 PayPal vor Ort</span>
+                        </label>
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Vorname <span class="req">*</span></label>
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Vorname</label>
                         <input type="text" id="custFirst" placeholder="Max">
-                        <div id="custFirstErr" class="form-error">Vorname erforderlich.</div>
+                        <div id="custFirstErr" class="field-error">Erforderlich</div>
                     </div>
-                    <div class="form-group">
-                        <label>Nachname <span class="req">*</span></label>
+                    <div class="input-group">
+                        <label>Nachname</label>
                         <input type="text" id="custLast" placeholder="Mustermann">
-                        <div id="custLastErr" class="form-error">Nachname erforderlich.</div>
+                        <div id="custLastErr" class="field-error">Erforderlich</div>
                     </div>
                 </div>
 
-                <div class="form-row full">
-                    <div class="form-group">
-                        <label>E-Mail-Adresse <span class="req">*</span></label>
-                        <input type="email" id="custEmail" placeholder="max@mustermann.de">
-                        <div id="custEmailErr" class="form-error">Gültige E-Mail erforderlich.</div>
-                    </div>
+                <div class="input-group full">
+                    <label>E-Mail-Adresse</label>
+                    <input type="email" id="custEmail" placeholder="max@mustermann.de">
+                    <div id="custEmailErr" class="field-error">Gültige E-Mail erforderlich</div>
                 </div>
 
-                <div id="shippingAddressFields" style="display: none;">
-                    <div class="form-row full">
-                        <div class="form-group">
-                            <label>Straße & Hausnummer <span class="req">*</span></label>
-                            <input type="text" id="custStreet" placeholder="Hauptstraße 12">
-                            <div id="custStreetErr" class="form-error">Adresse erforderlich.</div>
-                        </div>
+                <div id="shippingAddressFields" class="form-card" style="display: none;">
+                    <div class="input-group full">
+                        <label>Straße & Hausnummer</label>
+                        <input type="text" id="custStreet" placeholder="Hauptstraße 12">
+                        <div id="custStreetErr" class="field-error">Adresse erforderlich</div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 0.4;">
-                            <label>PLZ <span class="req">*</span></label>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label>PLZ</label>
                             <input type="text" id="custZip" placeholder="12345">
-                            <div id="custZipErr" class="form-error">PLZ erforderlich.</div>
+                            <div id="custZipErr" class="field-error">PLZ fehlt</div>
                         </div>
-                        <div class="form-group">
-                            <label>Ort <span class="req">*</span></label>
+                        <div class="input-group">
+                            <label>Ort</label>
                             <input type="text" id="custCity" placeholder="Musterstadt">
-                            <div id="custCityErr" class="form-error">Ort erforderlich.</div>
+                            <div id="custCityErr" class="field-error">Ort fehlt</div>
                         </div>
                     </div>
                 </div>
 
-                <button id="standardSubmitBtn" class="pay-btn" onclick="submitOrder()">Verbindlich Bestellen</button>
-                <p id="paymentNote" class="shipping-note">Bezahlung erfolgt bar bei Abholung.</p>
+                <button id="standardSubmitBtn" class="action-btn-primary checkout-trigger" onclick="submitOrder()">Kauf abschließen</button>
+                <p id="paymentNote" class="checkout-footer-note"></p>
             </div>
 
-            <div id="viewSuccess" class="view success-view">
-                <div class="success-icon">✓</div>
-                <h2>Danke!</h2>
+            <div id="viewSuccess" class="drawer-view success-pane">
+                <div class="success-ring">✓</div>
+                <h2>Bestellung erhalten!</h2>
                 <p id="successMsg"></p>
             </div>
-
         </div>
 
-        <div class="cart-footer">
-            <div class="cart-total-row">
-                <span class="total-label">Gesamtsumme:</span>
-                <span id="cartTotal" class="total-amount">€ 0,00</span>
+        <div class="drawer-footer">
+            <div class="summary-row">
+                <span>Gesamtsumme</span>
+                <span id="cartTotal" class="price">€ 0,00</span>
             </div>
-            
-            <div id="checkoutOptions" class="checkout-options">
-                <button class="checkout-opt-btn" onclick="startCheckout('pickup')">
-                    <span class="opt-icon">🏪</span>
-                    <span class="opt-label">Abholung</span>
-                    <span class="opt-sub">Bar / PayPal vor Ort</span>
+            <div id="checkoutOptions" class="checkout-actions-grid">
+                <button class="method-btn" onclick="startCheckout('pickup')">
+                    <span class="icon">🏪</span>
+                    <span class="lbl">Abholung</span>
                 </button>
-                <button class="checkout-opt-btn" onclick="startCheckout('shipping')">
-                    <span class="opt-icon">📦</span>
-                    <span class="opt-label">Versand</span>
-                    <span class="opt-sub">Zahlung via PayPal</span>
+                <button class="method-btn shipping" onclick="startCheckout('shipping')">
+                    <span class="icon">📦</span>
+                    <span class="lbl">Versand</span>
                 </button>
             </div>
         </div>
