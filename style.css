@@ -93,14 +93,14 @@ nav {
   margin: 0 auto;
 }
 
-/* GALLERY CHANNEL (Modernisiert: Transparenter BG & Runde Ecken) */
+/* GALLERY CHANNEL */
 .gallery {
   padding: 3rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: transparent; /* Kein extra Hintergrund-Grau mehr */
+  background-color: transparent;
   border-right: 1px solid #1a1a1a;
   position: relative;
 }
@@ -121,7 +121,7 @@ nav {
   height: auto;
   aspect-ratio: 1 / 1;
   object-fit: contain;
-  border-radius: 16px; /* Hochmoderne abgerundete Ecken */
+  border-radius: 16px;
   transition: opacity 0.2s ease-in-out;
 }
 
@@ -142,7 +142,7 @@ nav {
   cursor: pointer;
   padding: 0.2rem;
   background: #0a0a0a;
-  border-radius: 8px; /* Auch Thumbnails elegant abrunden */
+  border-radius: 8px;
   transition: border-color 0.3s;
 }
 
@@ -177,13 +177,16 @@ nav {
   margin-bottom: 0.5rem;
 }
 
+/* OPTIMIERT: Flexibler, bricht nicht mehr ungewollt Wörter auf */
 .product-name {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 3.8rem;
-  line-height: 1.0;
+  font-size: 3.2rem;
+  line-height: 1.1;
   letter-spacing: 1px;
   text-transform: uppercase;
   margin-bottom: 1rem;
+  white-space: normal;
+  word-break: keep-all;
 }
 
 .product-subtitle {
@@ -236,8 +239,8 @@ nav {
   background: transparent;
   color: #fff;
   border: 1px solid #333;
-  padding: 1rem;
-  font-size: 0.9rem;
+  padding: 1rem 0.5rem;
+  font-size: 0.85rem; /* Minimal kompakter für den neuen Text "X Stk." */
   cursor: pointer;
   transition: all 0.3s;
   text-transform: uppercase;
@@ -364,7 +367,7 @@ details p {
   line-height: 1.6;
 }
 
-/* 4. WARENKORB PANELS (KEINE SCROLLBALKEN) */
+/* 4. WARENKORB PANELS */
 .cart-overlay {
   position: fixed;
   top: 0;
@@ -801,8 +804,9 @@ details p {
     padding: 3rem 1.5rem;
   }
 
+  /* OPTIMIERT: Passt den langen Text mobil besser an */
   .product-name {
-    font-size: 3.5rem;
+    font-size: 2.6rem;
   }
 
   .size-grid {
@@ -819,12 +823,15 @@ details p {
     font-size: 1.6rem;
   }
   
+  /* OPTIMIERT: Text "CAN'T DRINK WITH US" passt ohne Umbruch-Fehler aufs Handy */
   .product-name {
-    font-size: 2.8rem;
+    font-size: 2.2rem;
   }
 
+  /* OPTIMIERT: 2 Spalten auf kleinstem Raum, damit der Button-Text "L (19 Stk.)" perfekt Platz hat */
   .size-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
   }
 
   .cart-panel {
