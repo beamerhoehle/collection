@@ -111,9 +111,30 @@ async function loadProductData(slug) {
         };
     }
 
+    // Bilder aus DB laden falls vorhanden, sonst Fallback auf hardcoded URLs
+    if (currentProduct.images && currentProduct.images.length > 0) {
+        activeImages.length = 0;
+        currentProduct.images.forEach(url => activeImages.push(url));
+        buildCarousel();
+    }
+
     document.getElementById('prodName').innerHTML = currentProduct.name;
     document.getElementById('prodSubtitle').innerText = currentProduct.subtitle;
     document.getElementById('prodPrice').innerText = `€ ${(currentProduct.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
+
+    // Accordion-Texte aus DB befüllen falls vorhanden
+    if (currentProduct.description) {
+        const descEl = document.getElementById('accordionDescription');
+        if (descEl) descEl.innerHTML = currentProduct.description;
+    }
+    if (currentProduct.care_instructions) {
+        const careEl = document.getElementById('accordionCare');
+        if (careEl) careEl.innerText = currentProduct.care_instructions;
+    }
+    if (currentProduct.shipping_info) {
+        const shipEl = document.getElementById('accordionShipping');
+        if (shipEl) shipEl.innerText = currentProduct.shipping_info;
+    }
 
     buildSizes(currentProduct.shirt_variants);
 }
@@ -133,14 +154,25 @@ function buildSizes(variants) {
 
     finalArray.forEach(variant => {
         const btn = document.createElement('button');
-        btn.className = 'size-tile';
         const stock = variant.stock !== undefined ? variant.stock : 5;
 
         if (stock <= 0) {
+            btn.className = 'size-tile sold-out';
             btn.disabled = true;
-            btn.innerText = variant.size;
+            btn.innerHTML = `<span class="size-label">${variant.size}</span><span class="stock-label">Ausverkauft</span>`;
+        } else if (stock <= 3) {
+            btn.className = 'size-tile low-stock';
+            btn.innerHTML = `<span class="size-label">${variant.size}</span><span class="stock-label stock-low">Nur noch ${stock}</span>`;
+            btn.onclick = () => {
+                selectedSize = variant.size;
+                document.getElementById('selectedSizeLabel').innerText = selectedSize;
+                document.getElementById('sizeError').classList.remove('show');
+                document.querySelectorAll('.size-tile').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            };
         } else {
-            btn.innerText = variant.size;
+            btn.className = 'size-tile';
+            btn.innerHTML = `<span class="size-label">${variant.size}</span><span class="stock-label">${stock} verfügbar</span>`;
             btn.onclick = () => {
                 selectedSize = variant.size;
                 document.getElementById('selectedSizeLabel').innerText = selectedSize;
@@ -397,9 +429,7 @@ async function submitOrder() {
         city:      currentDeliveryMethod === 'shipping' ? document.getElementById('custCity').value.trim() : null
     };
 
-    
-    console.log('PAYLOAD:', JSON.stringify(dataPayload, null, 2));
-const { error } = await supabaseClient.from('orders').insert([dataPayload]);
+    const { error } = await supabaseClient.from('orders').insert([dataPayload]);
     if (error) {
         alert('Datenbankfehler: ' + error.message);
         return;
