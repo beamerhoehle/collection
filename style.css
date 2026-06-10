@@ -386,7 +386,7 @@ details p {
   line-height: 1.6;
 }
 
-/* 4. WARENKORB PANELS */
+/* WARENKORB PANELS */
 .cart-overlay {
   position: fixed;
   top: 0;
@@ -789,7 +789,7 @@ details p {
   padding-top: 1rem;
 }
 
-/* 5. RESPONSIVE MEDIA QUERIES */
+/* RESPONSIVE MEDIA QUERIES */
 @media (max-width: 968px) {
   .product-wrap {
     grid-template-columns: 1fr;
