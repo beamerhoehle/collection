@@ -93,14 +93,14 @@ nav {
   margin: 0 auto;
 }
 
-/* GALLERY CHANNEL */
+/* GALLERY CHANNEL (Modernisiert: Transparenter BG & Runde Ecken) */
 .gallery {
   padding: 3rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #0e0e0e;
+  background-color: transparent; /* Kein extra Hintergrund-Grau mehr */
   border-right: 1px solid #1a1a1a;
   position: relative;
 }
@@ -121,6 +121,7 @@ nav {
   height: auto;
   aspect-ratio: 1 / 1;
   object-fit: contain;
+  border-radius: 16px; /* Hochmoderne abgerundete Ecken */
   transition: opacity 0.2s ease-in-out;
 }
 
@@ -141,6 +142,7 @@ nav {
   cursor: pointer;
   padding: 0.2rem;
   background: #0a0a0a;
+  border-radius: 8px; /* Auch Thumbnails elegant abrunden */
   transition: border-color 0.3s;
 }
 
@@ -152,6 +154,7 @@ nav {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  border-radius: 6px;
 }
 
 .thumb-dots {
@@ -176,7 +179,7 @@ nav {
 
 .product-name {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 3.8rem; /* Perfekt balanciert für den neuen langen Namen */
+  font-size: 3.8rem;
   line-height: 1.0;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -476,6 +479,7 @@ details p {
   background: #050505;
   border: 1px solid #1a1a1a;
   padding: 0.2rem;
+  border-radius: 8px;
 }
 
 .cart-item-info {
@@ -740,6 +744,12 @@ details p {
   color: #555;
 }
 
+#shippingAddressFields {
+  border-top: 1px dashed #222;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+}
+
 /* ==========================================================================
    5. MOBILE & TABLET OPTIMIERUNG
    ========================================================================== */
@@ -824,15 +834,4 @@ details p {
   .checkout-options {
     grid-template-columns: 1fr;
   }
-}
-/* Ergänzungen für die dynamischen Versandfelder */
-#shippingAddressFields {
-  border-top: 1px dashed #222;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-}
-
-#paypalButtonContainer {
-  z-index: 10;
-  position: relative;
 }
