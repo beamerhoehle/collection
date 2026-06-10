@@ -436,14 +436,27 @@ details[open] summary::after { content: '−'; }
     cursor: pointer;
 }
 
+/* Strikte Ansichtentrennung */
+.drawer-view {
+    display: none;
+    width: 100%;
+}
+
+.drawer-view.active {
+    display: block;
+}
+
 .drawer-body {
     flex: 1;
     overflow-y: auto;
     padding: 2rem;
+    position: relative; /* WICHTIG für saubere Stapelung */
 }
 
-.drawer-view { display: none; }
-.drawer-view.active { display: block; }
+/* Sichtbarkeits-Steuerung der Checkout-Footer-Optionen */
+#checkoutOptions {
+    display: none;
+}
 
 /* CART ITEM DESIGN */
 .cart-item {
