@@ -33,9 +33,10 @@ async function loadProduct(slug) {
     currentProduct = product;
     activeImages = product.images || [];
 
-    // Titel befüllen
-    document.getElementById('prodName').innerHTML = product.name.replace(/ /g, '<br>');
-    document.getElementById('prodSubtitle').innerText = product.subtitle || '';
+    // Titel befüllen (Bricht den Namen nur noch nach dem Doppelpunkt um)
+const originalName = product.name || '';
+document.getElementById('prodName').innerHTML = originalName.replace(': ', ':<br>');
+document.getElementById('prodSubtitle').innerText = product.subtitle || '';
     document.getElementById('prodPrice').innerText = `€ ${(product.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
 
     setupGallery();
