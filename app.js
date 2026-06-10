@@ -13,10 +13,14 @@ let cart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
 let activeImages = [];
 let currentDeliveryMethod = 'pickup'; // 'pickup' oder 'shipping'
 
+// Slider Index State
+let sliderIndex = 0;
+
 document.addEventListener('DOMContentLoaded', async () => {
     await loadProduct('beamerhoehle-tshirt-n1');
     updateCartCount();
     renderCartItems();
+    setupSliderControls();
 });
 
 // ==========================================================================
@@ -25,14 +29,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadProduct(slug) {
     const { data: product, error } = await supabaseClient
         .from('shirts')
-       .select(`*, shirt_variants (*).order(size.asc)`) 
+        .select(`*, shirt_variants (*).order(size.asc)`) 
         .eq('slug', slug)
         .single();
-
-    if (error) {
-        document.getElementById('prodName').innerHTML = `FEHLER:<br><span style="color:red;">${error.message}</span>`;
-        return;
-    }
 
     if (error) {
         document.getElementById('prodName').innerHTML = `FEHLER:<br><span style="color:red;">${error.message}</span>`;
@@ -42,7 +41,6 @@ async function loadProduct(slug) {
     currentProduct = product;
     activeImages = product.images || [];
 
-    // Titel befüllen (Gibt den Namen jetzt absolut unverändert & sauber ohne Fremdumbrüche aus)
     document.getElementById('prodName').innerHTML = product.name || '';
     document.getElementById('prodSubtitle').innerText = product.subtitle || '';
     document.getElementById('prodPrice').innerText = `€ ${(product.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
@@ -52,58 +50,68 @@ async function loadProduct(slug) {
 }
 
 // ==========================================================================
-// 3. IMAGES-GALLERY LOGIK (Glow-kompatibel)
+// 3. IMAGES-SLIDER INITIALISIERUNG & DOTS GENERIERUNG
 // ==========================================================================
 function setupGallery() {
-    const mainImg = document.getElementById('mainImg');
-    const thumbStrip = document.getElementById('thumbStrip');
+    const sliderWrapper = document.getElementById('sliderWrapper');
     const thumbDots = document.getElementById('thumbDots');
     
     if (!activeImages.length) return;
     
-    mainImg.src = activeImages[0];
-    thumbStrip.innerHTML = ''; 
+    // Befüllt den Slider-Wrapper mit allen verfügbaren Produktbildern
+    sliderWrapper.innerHTML = '';
     thumbDots.innerHTML = '';
-
+    
     activeImages.forEach((imgUrl, index) => {
-        const thumb = document.createElement('div');
-        thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
-        thumb.onclick = () => switchImg(index, thumb);
-        thumb.innerHTML = `<img src="${imgUrl}">`;
-        thumbStrip.appendChild(thumb);
+        const img = document.createElement('img');
+        img.className = 'gallery-main';
+        img.src = imgUrl;
+        img.alt = `Produktansicht ${index + 1}`;
+        sliderWrapper.appendChild(img);
         
+        // Generiert minimalistische Navigationspunkte unter dem Slider
         const dot = document.createElement('button');
-        dot.className = `thumb-dot ${index === 0 ? 'active' : ''}`;
-        dot.onclick = () => switchImg(index, dot);
+        dot.className = `slider-dot ${index === 0 ? 'active' : ''}`;
+        dot.onclick = () => moveSlider(index);
         thumbDots.appendChild(dot);
     });
+    
+    sliderIndex = 0;
+    sliderWrapper.style.transform = `translateX(0%)`;
 }
 
-function switchImg(index, element) {
-    const mainImg = document.getElementById('mainImg');
-    mainImg.classList.add('fade');
-    setTimeout(() => { 
-        mainImg.src = activeImages[index]; 
-        mainImg.classList.remove('fade'); 
-    }, 200);
-    document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
-    document.querySelectorAll('.thumb-dot').forEach((d, i) => d.classList.toggle('active', i === index));
+function setupSliderControls() {
+    document.getElementById('sliderPrev').onclick = () => moveSlider(sliderIndex - 1);
+    document.getElementById('sliderNext').onclick = () => moveSlider(sliderIndex + 1);
+}
+
+function moveSlider(targetIndex) {
+    const sliderWrapper = document.getElementById('sliderWrapper');
+    if (!activeImages.length) return;
+
+    if (targetIndex < 0) {
+        targetIndex = activeImages.length - 1;
+    } else if (targetIndex >= activeImages.length) {
+        targetIndex = 0;
+    }
+
+    sliderIndex = targetIndex;
+    sliderWrapper.style.transform = `translateX(-${sliderIndex * 100}%)`;
+    
+    // Aktiviert den passenden Punkt
+    document.querySelectorAll('.slider-dot').forEach((d, i) => d.classList.toggle('active', i === sliderIndex));
 }
 
 // ==========================================================================
-// 4. GRÖSSEN GENERIEREN & NEU SORTIEREN (Mit exakter Lagerbestandsanzeige)
+// 4. GRÖSSEN GENERIEREN (Mit exakter Lagerbestandsanzeige & Fallback)
 // ==========================================================================
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
     sizeGrid.innerHTML = '';
     
-    // Deine exakten Bestände als Sicherheitsnetz (Fallback), falls DB-Spalten leer sind
     const fallbackStock = { 'S': 1, 'M': 8, 'L': 19, 'XL': 10, '2XL': 8, '3XL': 4 };
-
-    // Verwende DB-Varianten, falls vorhanden, sonst generiere sie aus dem Sicherheitsnetz
     let finaleVarianten = (variants && variants.length > 0) ? variants : Object.keys(fallbackStock).map(size => ({ size, stock: fallbackStock[size] }));
 
-    // Festgelegtes Sortierschema für Bekleidung
     const sizeOrder = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
     finaleVarianten.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
     
@@ -111,7 +119,6 @@ function renderSizeGrid(variants) {
         const btn = document.createElement('button');
         btn.className = 'size-btn';
         
-        // Liest den Live-Stock aus oder nutzt das statische Objekt als Fallback
         const currentStock = (variant.stock !== undefined && variant.stock !== null) ? variant.stock : (fallbackStock[variant.size] || 0);
 
         if (currentStock <= 0) {
@@ -119,9 +126,7 @@ function renderSizeGrid(variants) {
             btn.style.opacity = '0.3';
             btn.innerText = `${variant.size} (Ausv.)`;
         } else {
-            // Generiert die moderne Buttonbeschriftung, z.B. "L (19 Stk.)"
             btn.innerText = `${variant.size} (${currentStock} Stk.)`;
-            
             btn.onclick = () => {
                 selectedSize = variant.size;
                 document.getElementById('sizeError').classList.remove('show');
@@ -137,13 +142,13 @@ function renderSizeGrid(variants) {
 // 5. WARENKORB BASICS & QUANTITY LOGIK
 // ==========================================================================
 function changeQty(change) { 
-    currentQty = Math.max(1, currentQty + change); 
+    currentQty = Math.max(1, currentQty + change);
     document.getElementById('qtyDisplay').innerText = currentQty; 
 }
 
 function toggleCart() { 
     document.getElementById('cartOverlay').classList.toggle('open'); 
-    document.getElementById('cartPanel').classList.toggle('open'); 
+    document.getElementById('cartPanel').classList.toggle('open');
 }
 
 function showView(viewId) {
@@ -155,7 +160,7 @@ function showView(viewId) {
 function addToCart() {
     if (!selectedSize) { 
         document.getElementById('sizeError').classList.add('show'); 
-        return; 
+        return;
     }
     const cartItem = { 
         id: currentProduct.id, 
@@ -165,9 +170,10 @@ function addToCart() {
         qty: currentQty, 
         image: activeImages[0] 
     };
+
     const idx = cart.findIndex(i => i.id === cartItem.id && i.size === cartItem.size);
     if (idx > -1) { 
-        cart[idx].qty += currentQty; 
+        cart[idx].qty += currentQty;
     } else { 
         cart.push(cartItem); 
     }
@@ -178,11 +184,11 @@ function addToCart() {
 function saveCart() { 
     localStorage.setItem('vaux_cart', JSON.stringify(cart)); 
     updateCartCount(); 
-    renderCartItems(); 
+    renderCartItems();
 }
 
 function updateCartCount() { 
-    document.getElementById('cartCount').innerText = cart.reduce((t, i) => t + i.qty, 0); 
+    document.getElementById('cartCount').innerText = cart.reduce((t, i) => t + i.qty, 0);
 }
 
 // ==========================================================================
@@ -242,13 +248,15 @@ function renderCartItems() {
 
 function updateQty(index, change) { 
     cart[index].qty += change; 
-    if (cart[index].qty <= 0) { cart.splice(index, 1); } 
+    if (cart[index].qty <= 0) { 
+        cart.splice(index, 1);
+    } 
     saveCart(); 
 }
 
 function removeItem(index) { 
     cart.splice(index, 1); 
-    saveCart(); 
+    saveCart();
 }
 
 // ==========================================================================
@@ -257,12 +265,11 @@ function removeItem(index) {
 function startCheckout(method) {
     currentDeliveryMethod = method;
     renderCartItems();
-    
     const addrFields = document.getElementById('shippingAddressFields');
     const submitBtn = document.getElementById('standardSubmitBtn');
     const payNote = document.getElementById('paymentNote');
     const title = document.getElementById('checkoutTitle');
-    
+
     if (method === 'shipping') {
         title.innerText = "Lieferadresse";
         addrFields.style.display = "block";
@@ -305,6 +312,7 @@ async function submitOrder() {
     if (!validateForm()) return false;
     let totals = calculateTotals();
     let isPayPal = (currentDeliveryMethod === 'shipping');
+    
     const orderData = {
         first_name: document.getElementById('custFirst').value.trim(),
         last_name: document.getElementById('custLast').value.trim(),
@@ -320,7 +328,11 @@ async function submitOrder() {
     };
 
     const { error } = await supabaseClient.from('orders').insert([orderData]);
-    if (error) { alert('Fehler beim Absenden.'); console.error(error); return false; }
+    if (error) { 
+        alert('Fehler beim Absenden.'); 
+        console.error(error); 
+        return false;
+    }
     
     let formattedPrice = (totals.grandTotal / 100).toFixed(2);
     if (isPayPal) {
