@@ -78,7 +78,6 @@ function setupGallery() {
     sliderWrapper.style.transform = `translateX(0%)`;
 }
 
-// Slider-Pfeile mit Logik verknüpfen
 function setupSliderControls() {
     document.getElementById('sliderPrev').onclick = () => moveSlider(sliderIndex - 1);
     document.getElementById('sliderNext').onclick = () => moveSlider(sliderIndex + 1);
@@ -264,22 +263,36 @@ function startCheckout(method) {
     currentDeliveryMethod = method;
     renderCartItems();
     const addrFields = document.getElementById('shippingAddressFields');
+    const pickupPayFields = document.getElementById('pickupPaymentSelect');
     const submitBtn = document.getElementById('standardSubmitBtn');
-    const payNote = document.getElementById('paymentNote');
-    const title = document.getElementById('checkoutTitle');
 
     if (method === 'shipping') {
-        title.innerText = "Lieferadresse";
+        document.getElementById('checkoutTitle').innerText = "Lieferadresse";
         addrFields.style.display = "block";
+        pickupPayFields.style.display = "none"; 
         submitBtn.innerText = "Zu PayPal & Bestellen";
-        payNote.innerText = "Sichere Zahlungsweiterleitung über PayPal.me.";
+        document.getElementById('paymentNote').innerText = "Sichere Zahlungsweiterleitung über PayPal.me.";
     } else {
-        title.innerText = "Abholerdetails";
+        document.getElementById('checkoutTitle').innerText = "Abholerdetails";
         addrFields.style.display = "none";
+        pickupPayFields.style.display = "block"; 
+        updatePickupPaymentNote(); 
+    }
+    showView('viewCheckout');
+}
+
+function updatePickupPaymentNote() {
+    const submitBtn = document.getElementById('standardSubmitBtn');
+    const payNote = document.getElementById('paymentNote');
+    const selectedMethod = document.querySelector('input[name="pickupPayment"]:checked').value;
+
+    if (selectedMethod === 'PayPal') {
+        submitBtn.innerText = "Zu PayPal & Bestellen";
+        payNote.innerText = "Direkte Bezahlung via PayPal.me bei der Bestellung.";
+    } else {
         submitBtn.innerText = "Verbindlich Bestellen (Bar)";
         payNote.innerText = "Bezahlung erfolgt bar bei Abholung vor Ort.";
     }
-    showView('viewCheckout');
 }
 
 function validateForm() {
@@ -309,16 +322,22 @@ function validateForm() {
 async function submitOrder() {
     if (!validateForm()) return false;
     let totals = calculateTotals();
-    let isPayPal = (currentDeliveryMethod === 'shipping');
     
-    // Bereite die lesbaren Spaltendaten aus dem Warenkorb-Array vor
+    // Ermittle die gewünschte Zahlungsart
+    let paymentMethod = 'Bar';
+    if (currentDeliveryMethod === 'shipping') {
+        paymentMethod = 'PayPal';
+    } else {
+        paymentMethod = document.querySelector('input[name="pickupPayment"]:checked').value;
+    }
+    
+    let isPayPal = (paymentMethod === 'PayPal');
+    
     let groesseText = "";
     let gesamtAnzahl = 0;
     
     if (cart.length > 0) {
-        // Verbindet Größen kommagetrennt, falls mehrere verschiedene im Warenkorb liegen (z.B. "M, XL")
         groesseText = cart.map(item => item.size).join(', ');
-        // Rechnet alle bestellten Stückzahlen zusammen
         gesamtAnzahl = cart.reduce((sum, item) => sum + item.qty, 0);
     }
     
@@ -327,16 +346,16 @@ async function submitOrder() {
         last_name: document.getElementById('custLast').value.trim(),
         email: document.getElementById('custEmail').value.trim(),
         delivery_method: currentDeliveryMethod,
-        payment_method: isPayPal ? 'PayPal' : 'Bar',
+        payment_method: paymentMethod,
         payment_status: isPayPal ? 'Bezahlt via PayPal' : 'offen',
         total_amount_in_cents: totals.grandTotal,
-        cart_items: cart,             // Speichert das vollständige JSON-Array als Backup
-        selected_size: groesseText,    // Schreibt die Größe direkt lesbar in deine Supabase-Textspalte
-        total_quantity: gesamtAnzahl,  // Schreibt die Anzahl direkt lesbar in deine Supabase-Zahlenspalte
+        cart_items: cart,             
+        selected_size: groesseText,    
+        total_quantity: gesamtAnzahl,  
         status: 'pending',
-        street: isPayPal ? document.getElementById('custStreet').value.trim() : null,
-        zip_code: isPayPal ? document.getElementById('custZip').value.trim() : null,
-        city: isPayPal ? document.getElementById('custCity').value.trim() : null
+        street: (currentDeliveryMethod === 'shipping') ? document.getElementById('custStreet').value.trim() : null,
+        zip_code: (currentDeliveryMethod === 'shipping') ? document.getElementById('custZip').value.trim() : null,
+        city: (currentDeliveryMethod === 'shipping') ? document.getElementById('custCity').value.trim() : null
     };
 
     const { error } = await supabaseClient.from('orders').insert([orderData]);
