@@ -122,7 +122,12 @@ nav {
   aspect-ratio: 1 / 1;
   object-fit: contain;
   border-radius: 16px; /* Hochmoderne abgerundete Ecken */
-  transition: opacity 0.2s ease-in-out;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Edler, weicher Schatten für Tiefe */
+  transition: transform 0.3s ease, opacity 0.2s ease-in-out;
+}
+
+.gallery-main:hover {
+  transform: scale(1.02); /* Minimaler, edler Zoom beim Hovern */
 }
 
 .gallery-main.fade {
@@ -364,7 +369,7 @@ details p {
   line-height: 1.6;
 }
 
-/* 4. WARENKORB PANELS (KEINE SCROLLBALKEN) */
+/* 4. WARENKORB PANELS */
 .cart-overlay {
   position: fixed;
   top: 0;
@@ -750,9 +755,7 @@ details p {
   padding-top: 1rem;
 }
 
-/* ==========================================================================
-   5. MOBILE & TABLET OPTIMIERUNG
-   ========================================================================== */
+/* 5. MOBILE & TABLET OPTIMIERUNG */
 @media (max-width: 968px) {
   .product-wrap {
     grid-template-columns: 1fr;
