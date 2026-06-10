@@ -1,5 +1,5 @@
 // ==========================================================================
-// 1. SUPABASE INITIALISIERUNG
+// 1. SETTINGS & IMMUTABLE CONFIG
 // ==========================================================================
 const SUPABASE_URL = 'https://kmanxvyaluledddvzdxv.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttYW54dnlhbHVsZWRkZHZ6ZHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjU5NjIsImV4cCI6MjA5NjYwMTk2Mn0.qBCdrzOo4qSbItETomTJ38Fc4gpvE4dMt5L9rYwMKq8';
@@ -9,404 +9,366 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentProduct = null;
 let selectedSize = null;
 let currentQty = 1;
+let currentSlideIndex = 0;
 let cart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
 let currentDeliveryMethod = 'pickup';
 
-// DEINE FEST DEFINIERTEN BILDER (Garantiert immer aktiv)
+// DEINE FIXEN BILD-URLS FÜR DEN MODERNEN SLIDER
 const activeImages = [
     'https://kmanxvyaluledddvzdxv.supabase.co/storage/v1/object/public/product-images/No.3-(v1).jpg',
     'https://kmanxvyaluledddvzdxv.supabase.co/storage/v1/object/public/product-images/No.3-(v2).jpg'
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Galerie sofort laden, damit die Bilder nicht auf die DB warten müssen
-    setupGallery();
-    
-    // Danach Produkt-Texte und Größen laden
-    await loadProduct('beamerhoehle-tshirt-n1');
+    buildCarousel(); // Baut den echten Slider auf
+    await loadProductData('beamerhoehle-tshirt-n1');
     updateCartCount();
     renderCartItems();
 });
 
 // ==========================================================================
-// 2. PRODUKTDATEN DYNAMISCH AUS SUPABASE LADEN
+// 2. MODERN CAROUSEL / SLIDER LOGIK
 // ==========================================================================
-async function loadProduct(slug) {
+function buildCarousel() {
+    const track = document.getElementById('carouselTrack');
+    const dotsContainer = document.getElementById('carouselDots');
+    if (!track) return;
+
+    track.innerHTML = '';
+    dotsContainer.innerHTML = '';
+
+    activeImages.forEach((url, idx) => {
+        // Slide Element erstellen
+        const slide = document.createElement('div');
+        slide.className = 'carousel-slide';
+        slide.innerHTML = `<img src="${url}" alt="Produktansicht ${idx + 1}">`;
+        track.appendChild(slide);
+
+        // Dot erstellen
+        const dot = document.createElement('button');
+        dot.className = `c-dot ${idx === 0 ? 'active' : ''}`;
+        dot.onclick = () => jumpToSlide(idx);
+        dotsContainer.appendChild(dot);
+    });
+}
+
+function moveSlider(direction) {
+    currentSlideIndex += direction;
+    if (currentSlideIndex >= activeImages.length) currentSlideIndex = 0;
+    if (currentSlideIndex < 0) currentSlideIndex = activeImages.length - 1;
+    updateSliderUI();
+}
+
+function jumpToSlide(index) {
+    currentSlideIndex = index;
+    updateSliderUI();
+}
+
+function updateSliderUI() {
+    const track = document.getElementById('carouselTrack');
+    if (track) {
+        track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+    }
+    // Update Dots active State
+    const dots = document.querySelectorAll('.c-dot');
+    dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === currentSlideIndex);
+    });
+}
+
+// ==========================================================================
+// 3. PRODUKTDATEN & GRÖSSEN AUS DER DB HOLEN
+// ==========================================================================
+async function loadProductData(slug) {
     try {
         const { data: product, error } = await supabaseClient
             .from('shirts')
-            .select(`*, shirt_variants (*)`) 
+            .select(`*, shirt_variants (*)`)
             .eq('slug', slug)
             .maybeSingle();
 
-        if (error) console.error("Supabase Fehler:", error.message);
+        if (error) console.error("Supabase Error:", error.message);
 
-        // Fallback falls DB-Eintrag fehlt, damit die Seite niemals leer bleibt
         currentProduct = product || {
             id: 'fallback-id',
-            name: 'KOLLEKTION N°3 T-SHIRT',
-            subtitle: 'Official Beamerhöhle Premium Shirt',
+            name: 'KOLLEKTION N°3 PREMIUM T-SHIRT',
+            subtitle: 'Official Beamerhöhle Wear',
             price_in_cents: 2999,
             shirt_variants: []
         };
     } catch (e) {
         console.error("Netzwerkfehler:", e);
-        currentProduct = {
-            id: 'fallback-id',
-            name: 'KOLLEKTION N°3 T-SHIRT',
-            subtitle: 'Official Beamerhöhle Premium Shirt',
-            price_in_cents: 2999,
-            shirt_variants: []
-        };
     }
 
-    // Texte & Preise einfügen
-    document.getElementById('prodName').innerHTML = currentProduct.name || '';
-    document.getElementById('prodSubtitle').innerText = currentProduct.subtitle || '';
+    // Dom-Texte injizieren
+    document.getElementById('prodName').innerHTML = currentProduct.name;
+    document.getElementById('prodSubtitle').innerText = currentProduct.subtitle;
     document.getElementById('prodPrice').innerText = `€ ${(currentProduct.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
 
-    // Größen generieren
-    renderSizeGrid(currentProduct.shirt_variants);
+    buildSizes(currentProduct.shirt_variants);
 }
 
-// ==========================================================================
-// 3. IMAGES-GALLERY LOGIK (Bilder-Slider)
-// ==========================================================================
-function setupGallery() {
-    const mainImg = document.getElementById('mainImg');
-    const thumbStrip = document.getElementById('thumbStrip');
-    const thumbDots = document.getElementById('thumbDots');
-    
-    if (!activeImages || activeImages.length === 0) return;
-    
-    // Hauptbild setzen
-    mainImg.src = activeImages[0];
-    thumbStrip.innerHTML = ''; 
-    thumbDots.innerHTML = '';
+function buildSizes(variants) {
+    const grid = document.getElementById('sizeGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
 
-    // Daumenkinos & Mobile-Dots bauen
-    activeImages.forEach((imgUrl, index) => {
-        // Desktop Thumbnails
-        const thumb = document.createElement('div');
-        thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
-        thumb.onclick = () => switchImg(index);
-        thumb.innerHTML = `<img src="${imgUrl}">`;
-        thumbStrip.appendChild(thumb);
-        
-        // Mobile Dots
-        const dot = document.createElement('button');
-        dot.className = `thumb-dot ${index === 0 ? 'active' : ''}`;
-        dot.onclick = () => switchImg(index);
-        thumbDots.appendChild(dot);
-    });
-}
-
-function switchImg(index) {
-    const mainImg = document.getElementById('mainImg');
-    if (!mainImg) return;
-
-    mainImg.classList.add('fade');
-    setTimeout(() => { 
-        mainImg.src = activeImages[index]; 
-        mainImg.classList.remove('fade'); 
-    }, 200);
-
-    // Active-Klassen bei Thumbs & Dots updaten
-    const thumbs = document.querySelectorAll('.thumb');
-    thumbs.forEach((t, i) => t.classList.toggle('active', i === index));
-
-    const dots = document.querySelectorAll('.thumb-dot');
-    dots.forEach((d, i) => d.classList.toggle('active', i === index));
-}
-
-// ==========================================================================
-// 4. GRÖSSEN GENERIEREN (Garantiert immer da)
-// ==========================================================================
-function renderSizeGrid(variants) {
-    const sizeGrid = document.getElementById('sizeGrid');
-    if (!sizeGrid) return;
-    sizeGrid.innerHTML = '';
-    
-    const fallbackStock = { 'S': 5, 'M': 8, 'L': 15, 'XL': 10, '2XL': 6, '3XL': 4 };
-    
-    let finaleVarianten = [];
-    if (variants && variants.length > 0) {
-        finaleVarianten = variants;
-    } else {
-        finaleVarianten = Object.keys(fallbackStock).map(size => ({
-            size: size,
-            stock: fallbackStock[size]
-        }));
-    }
+    const fallbackStock = { 'S': 5, 'M': 10, 'L': 15, 'XL': 12, '2XL': 6, '3XL': 3 };
+    let finalArray = (variants && variants.length > 0) ? variants : Object.keys(fallbackStock).map(s => ({ size: s, stock: fallbackStock[s] }));
 
     const sizeOrder = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
-    finaleVarianten.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
-    
-    finaleVarianten.forEach(variant => {
-        const btn = document.createElement('button');
-        btn.className = 'size-btn';
-        
-        const currentStock = (variant.stock !== undefined && variant.stock !== null) ? variant.stock : 5;
+    finalArray.sort((a,b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
 
-        if (currentStock <= 0) {
+    finalArray.forEach(variant => {
+        const btn = document.createElement('button');
+        btn.className = 'size-tile';
+        const stock = variant.stock !== undefined ? variant.stock : 5;
+
+        if (stock <= 0) {
             btn.disabled = true;
-            btn.style.opacity = '0.3';
-            btn.innerText = `${variant.size} (Ausv.)`;
-        } else {
             btn.innerText = `${variant.size}`;
+        } else {
+            btn.innerText = variant.size;
             btn.onclick = () => {
                 selectedSize = variant.size;
+                document.getElementById('selectedSizeLabel').innerText = selectedSize;
                 document.getElementById('sizeError').classList.remove('show');
-                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+                document.querySelectorAll('.size-tile').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
             };
         }
-        sizeGrid.appendChild(btn);
+        grid.appendChild(btn);
     });
 }
 
 // ==========================================================================
-// 5. WARENKORB BASICS & QUANTITY LOGIK
+// 4. QUANTITY & INTERACTION LAYER
 // ==========================================================================
-function changeQty(change) { 
-    currentQty = Math.max(1, currentQty + change);
-    document.getElementById('qtyDisplay').innerText = currentQty; 
+function changeQty(mod) {
+    currentQty = Math.max(1, currentQty + mod);
+    document.getElementById('qtyDisplay').innerText = currentQty;
 }
 
-function toggleCart() { 
-    document.getElementById('cartOverlay').classList.toggle('open'); 
+function toggleCart() {
+    document.getElementById('cartOverlay').classList.toggle('open');
     document.getElementById('cartPanel').classList.toggle('open');
 }
 
 function showView(viewId) {
-    document.querySelectorAll('.cart-body .view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.drawer-view').forEach(v => v.classList.remove('active'));
     document.getElementById(viewId).classList.add('active');
     document.getElementById('checkoutOptions').style.display = (viewId === 'viewItems' && cart.length > 0) ? 'grid' : 'none';
 }
 
 function addToCart() {
-    if (!selectedSize) { 
-        document.getElementById('sizeError').classList.add('show'); 
+    if (!selectedSize) {
+        document.getElementById('sizeError').classList.add('show');
         return;
     }
-    const cartItem = { 
-        id: currentProduct.id, 
-        name: currentProduct.name, 
-        size: selectedSize, 
-        price: currentProduct.price_in_cents, 
-        qty: currentQty, 
-        image: activeImages[0] 
+    const item = {
+        id: currentProduct.id,
+        name: currentProduct.name,
+        size: selectedSize,
+        price: currentProduct.price_in_cents,
+        qty: currentQty,
+        image: activeImages[0]
     };
 
-    const idx = cart.findIndex(i => i.id === cartItem.id && i.size === cartItem.size);
-    if (idx > -1) { 
-        cart[idx].qty += currentQty;
-    } else { 
-        cart.push(cartItem); 
+    const findIdx = cart.findIndex(c => c.id === item.id && c.size === item.size);
+    if (findIdx > -1) {
+        cart[findIdx].qty += currentQty;
+    } else {
+        cart.push(item);
     }
-    saveCart(); 
+    saveCartState();
     toggleCart();
 }
 
-function saveCart() { 
-    localStorage.setItem('vaux_cart', JSON.stringify(cart)); 
-    updateCartCount(); 
+function saveCartState() {
+    localStorage.setItem('vaux_cart', JSON.stringify(cart));
+    updateCartCount();
     renderCartItems();
 }
 
-function updateCartCount() { 
-    document.getElementById('cartCount').innerText = cart.reduce((t, i) => t + i.qty, 0);
+function updateCartCount() {
+    document.getElementById('cartCount').innerText = cart.reduce((acc, i) => acc + i.qty, 0);
 }
 
 // ==========================================================================
-// 6. VERSANDKOSTEN-BERECHNUNG & WARENKORB-RENDERER
+// 5. WARENKORB BERECHNUNGEN & RENDERER
 // ==========================================================================
-function calculateTotals() {
-    let pTotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-    let totalItems = cart.reduce((s, i) => s + i.qty, 0);
-    let sCost = (currentDeliveryMethod === 'shipping' && totalItems < 2) ? 299 : 0;
-    return { grandTotal: pTotal + sCost, shippingCost: sCost };
+function getTotals() {
+    let sub = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+    let items = cart.reduce((acc, i) => acc + i.qty, 0);
+    let ship = (currentDeliveryMethod === 'shipping' && items < 2) ? 299 : 0;
+    return { grand: sub + ship, shipping: ship };
 }
 
 function renderCartItems() {
-    const container = document.getElementById('cartItemsContainer');
-    const totalDisplay = document.getElementById('cartTotal');
-    
+    const box = document.getElementById('cartItemsContainer');
+    const totalField = document.getElementById('cartTotal');
+    if (!box) return;
+
     if (cart.length === 0) {
-        container.innerHTML = `<div class="cart-empty"><strong>Leergut.</strong>Dein Warenkorb ist leer.</div>`;
-        totalDisplay.innerText = '€ 0,00';
+        box.innerHTML = `<div class="cart-empty">Dein Warenkorb ist leer.</div>`;
+        totalField.innerText = '€ 0,00';
         return;
     }
-    
-    container.innerHTML = '';
-    cart.forEach((item, index) => {
-        const itemEl = document.createElement('div'); 
-        itemEl.className = 'cart-item';
-        itemEl.innerHTML = `
-            <img src="${item.image}" class="cart-item-img">
-            <div class="cart-item-info">
-                <div class="cart-item-name">${item.name}</div>
-                <div class="cart-item-size">Größe: ${item.size}</div>
-                <div class="cart-item-bottom">
-                    <div class="cart-qty-ctrl">
-                        <button class="cart-qty-btn" onclick="updateQty(${index}, -1)">−</button>
-                        <span class="cart-qty-val">${item.qty}</span>
-                        <button class="cart-qty-btn" onclick="updateQty(${index}, 1)">+</button>
-                    </div>
-                    <span class="cart-item-price">€ ${((item.price * item.qty) / 100).toFixed(2).replace('.', ',')}</span>
+
+    box.innerHTML = '';
+    cart.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+            <img src="${item.image}">
+            <div class="cart-item-details">
+                <div class="item-meta">
+                    <h5>${item.name}</h5>
+                    <span>Größe: ${item.size}</span>
                 </div>
-                <button class="remove-item-btn" onclick="removeItem(${index})">Entfernen</button>
-            </div>`;
-        container.appendChild(itemEl);
+                <div class="item-actions">
+                    <div class="mini-qty">
+                        <button onclick="updateCartQty(${idx}, -1)">−</button>
+                        <span>${item.qty}</span>
+                        <button onclick="updateCartQty(${idx}, 1)">+</button>
+                    </div>
+                    <span style="font-weight:600;">€ ${((item.price * item.qty)/100).toFixed(2).replace('.', ',')}</span>
+                </div>
+                <button class="del-btn" onclick="killCartItem(${idx})">Entfernen</button>
+            </div>
+        `;
+        box.appendChild(div);
     });
-    
-    let totals = calculateTotals();
-    const shippingEl = document.createElement('div');
-    shippingEl.style = "display:flex; justify-content:space-between; padding:0.5rem 0; font-size:0.9rem; color:#555; border-top:1px dashed #222; margin-top:1rem;";
-    
+
+    let data = getTotals();
+    const costRow = document.createElement('div');
+    costRow.style = "display:flex; justify-content:space-between; margin-top:1.5rem; padding-top:1rem; border-top:1px dashed var(--border-color); font-size:0.85rem; color:var(--text-muted);";
     if (currentDeliveryMethod === 'pickup') {
-        shippingEl.innerHTML = `<span>Versandart:</span><span>🏪 Selbstabholung</span>`;
+        costRow.innerHTML = `<span>Option:</span><span>🏪 Selbstabholung</span>`;
     } else {
-        shippingEl.innerHTML = `<span>Versandkosten:</span><span>${totals.shippingCost > 0 ? '€ 2,99' : '<span style="color:#00ff66;">Kostenlos</span>'}</span>`;
+        costRow.innerHTML = `<span>Versandkosten:</span><span>${data.shipping > 0 ? '€ 2,99' : '<span style="color:var(--success-green);">Kostenlos</span>'}</span>`;
     }
-    container.appendChild(shippingEl);
-    totalDisplay.innerText = `€ ${(totals.grandTotal / 100).toFixed(2).replace('.', ',')}`;
+    box.appendChild(costRow);
+
+    totalField.innerText = `€ ${(data.grand / 100).toFixed(2).replace('.', ',')}`;
 }
 
-function updateQty(index, change) { 
-    cart[index].qty += change; 
-    if (cart[index].qty <= 0) { 
-        cart.splice(index, 1);
-    } 
-    saveCart(); 
+function updateCartQty(idx, mod) {
+    cart[idx].qty += mod;
+    if (cart[idx].qty <= 0) cart.splice(idx, 1);
+    saveCartState();
 }
 
-function removeItem(index) { 
-    cart.splice(index, 1); 
-    saveCart();
+function killCartItem(idx) {
+    cart.splice(idx, 1);
+    saveCartState();
 }
 
 // ==========================================================================
-// 7. CHECKOUT LOGIK & FORMULARVALIDIERUNG
+// 6. MODERN CHECKOUT CONTROLLER
 // ==========================================================================
 function startCheckout(method) {
     currentDeliveryMethod = method;
     renderCartItems();
-    const addrFields = document.getElementById('shippingAddressFields');
-    const pickupPayFields = document.getElementById('pickupPaymentSelect');
-    const submitBtn = document.getElementById('standardSubmitBtn');
-    const payNote = document.getElementById('paymentNote');
+    
+    const adr = document.getElementById('shippingAddressFields');
+    const pick = document.getElementById('pickupPaymentSelect');
+    const subBtn = document.getElementById('standardSubmitBtn');
     const title = document.getElementById('checkoutTitle');
 
     if (method === 'shipping') {
         title.innerText = "Lieferadresse";
-        addrFields.style.display = "block";
-        pickupPayFields.style.display = "none"; 
-        submitBtn.innerText = "Zu PayPal & Bestellen";
-        payNote.innerText = "Sichere Zahlungsweiterleitung über PayPal.me.";
+        adr.style.display = "block";
+        pick.style.display = "none";
+        subBtn.innerText = "Zu PayPal & Bestellen";
     } else {
-        title.innerText = "Abholerdetails";
-        addrFields.style.display = "none";
-        pickupPayFields.style.display = "block"; 
-        updatePickupPaymentNote(); 
+        title.innerText = "Abholer-Details";
+        adr.style.display = "none";
+        pick.style.display = "block";
+        updatePickupPaymentNote();
     }
     showView('viewCheckout');
 }
 
 function updatePickupPaymentNote() {
-    const submitBtn = document.getElementById('standardSubmitBtn');
-    const payNote = document.getElementById('paymentNote');
-    const selectedMethod = document.querySelector('input[name="pickupPayment"]:checked').value;
+    const subBtn = document.getElementById('standardSubmitBtn');
+    const note = document.getElementById('paymentNote');
+    const value = document.querySelector('input[name="pickupPayment"]:checked').value;
 
-    if (selectedMethod === 'PayPal') {
-        submitBtn.innerText = "Zu PayPal & Bestellen";
-        payNote.innerText = "Direkte Bezahlung via PayPal.me bei der Bestellung.";
+    if (value === 'PayPal') {
+        subBtn.innerText = "Zu PayPal & Bestellen";
+        note.innerText = "Zahlung erfolgt direkt via PayPal.me.";
     } else {
-        submitBtn.innerText = "Verbindlich Bestellen";
-        payNote.innerText = "Bezahlung erfolgt bar bei Abholung vor Ort.";
+        subBtn.innerText = "Verbindlich Reservieren";
+        note.innerText = "Bezahlung erfolgt bar bei Abholung.";
     }
 }
 
 function validateForm() {
-    const first = document.getElementById('custFirst').value.trim();
-    const last = document.getElementById('custLast').value.trim();
-    const email = document.getElementById('custEmail').value.trim();
-    let valid = true;
-    
-    if (!first) { document.getElementById('custFirstErr').classList.add('show'); valid = false; } else { document.getElementById('custFirstErr').classList.remove('show'); }
-    if (!last) { document.getElementById('custLastErr').classList.add('show'); valid = false; } else { document.getElementById('custLastErr').classList.remove('show'); }
-    if (!email || !email.includes('@')) { document.getElementById('custEmailErr').classList.add('show'); valid = false; } else { document.getElementById('custEmailErr').classList.remove('show'); }
-    
+    let ok = true;
+    const f = (id) => document.getElementById(id).value.trim();
+    const err = (id, show) => document.getElementById(id).classList.toggle('show', show);
+
+    if (!f('custFirst')) { err('custFirstErr', true); ok = false; } else { err('custFirstErr', false); }
+    if (!f('custLast')) { err('custLastErr', true); ok = false; } else { err('custLastErr', false); }
+    if (!f('custEmail') || !f('custEmail').includes('@')) { err('custEmailErr', true); ok = false; } else { err('custEmailErr', false); }
+
     if (currentDeliveryMethod === 'shipping') {
-        const street = document.getElementById('custStreet').value.trim();
-        const zip = document.getElementById('custZip').value.trim();
-        const city = document.getElementById('custCity').value.trim();
-        if (!street) { document.getElementById('custStreetErr').classList.add('show'); valid = false; } else { document.getElementById('custStreetErr').classList.remove('show'); }
-        if (!zip) { document.getElementById('custZipErr').classList.add('show'); valid = false; } else { document.getElementById('custZipErr').classList.remove('show'); }
-        if (!city) { document.getElementById('custCityErr').classList.add('show'); valid = false; } else { document.getElementById('custCityErr').classList.remove('show'); }
+        if (!f('custStreet')) { err('custStreetErr', true); ok = false; } else { err('custStreetErr', false); }
+        if (!f('custZip')) { err('custZipErr', true); ok = false; } else { err('custZipErr', false); }
+        if (!f('custCity')) { err('custCityErr', true); ok = false; } else { err('custCityErr', false); }
     }
-    return valid;
+    return ok;
 }
 
-// ==========================================================================
-// 8. BESTELLUNG VERARBEITEN
-// ==========================================================================
 async function submitOrder() {
-    if (!validateForm()) return false;
-    let totals = calculateTotals();
-    
-    let paymentMethod = 'Bar';
+    if (!validateForm()) return;
+    let calculations = getTotals();
+
+    let payMethod = 'Bar';
     if (currentDeliveryMethod === 'shipping') {
-        paymentMethod = 'PayPal';
+        payMethod = 'PayPal';
     } else {
-        paymentMethod = document.querySelector('input[name="pickupPayment"]:checked').value;
+        payMethod = document.querySelector('input[name="pickupPayment"]:checked').value;
     }
-    
-    let isPayPal = (paymentMethod === 'PayPal');
-    
-    let groesseText = "";
-    let gesamtAnzahl = 0;
-    
-    if (cart.length > 0) {
-        groesseText = cart.map(item => item.size).join(', ');
-        gesamtAnzahl = cart.reduce((sum, item) => sum + item.qty, 0);
-    }
-    
-    const orderData = {
+
+    let isPayPal = (payMethod === 'PayPal');
+    let finalSizes = cart.map(i => `${i.size} (${i.qty}x)`).join(', ');
+    let finalQty = cart.reduce((acc, i) => acc + i.qty, 0);
+
+    const dataPayload = {
         first_name: document.getElementById('custFirst').value.trim(),
         last_name: document.getElementById('custLast').value.trim(),
         email: document.getElementById('custEmail').value.trim(),
         delivery_method: currentDeliveryMethod,
-        payment_method: paymentMethod,
+        payment_method: payMethod,
         payment_status: isPayPal ? 'Bezahlt via PayPal' : 'offen',
-        total_amount_in_cents: totals.grandTotal,
-        cart_items: cart,             
-        selected_size: groesseText,    
-        total_quantity: gesamtAnzahl,  
+        total_amount_in_cents: calculations.grand,
+        cart_items: cart,
+        selected_size: finalSizes,
+        total_quantity: finalQty,
         status: 'pending',
-        street: (currentDeliveryMethod === 'shipping') ? document.getElementById('custStreet').value.trim() : null,
-        zip_code: (currentDeliveryMethod === 'shipping') ? document.getElementById('custZip').value.trim() : null,
-        city: (currentDeliveryMethod === 'shipping') ? document.getElementById('custCity').value.trim() : null
+        street: currentDeliveryMethod === 'shipping' ? document.getElementById('custStreet').value.trim() : null,
+        zip_code: currentDeliveryMethod === 'shipping' ? document.getElementById('custZip').value.trim() : null,
+        city: currentDeliveryMethod === 'shipping' ? document.getElementById('custCity').value.trim() : null
     };
 
-    const { error } = await supabaseClient.from('orders').insert([orderData]);
-    if (error) { 
-        alert('Fehler beim Absenden der Bestellung: ' + error.message); 
-        console.error(error); 
-        return false;
-    }
-    
-    let formattedPrice = (totals.grandTotal / 100).toFixed(2);
-    if (isPayPal) {
-        window.open(`https://www.paypal.me/JulianGromadka/${formattedPrice}`, '_blank');
-        document.getElementById('successMsg').innerHTML = `Deine Bestellung wurde registriert!<br>Bitte schließe die Zahlung über das geöffnete PayPal-Fenster ab.<br><br><b>Betrag: € ${formattedPrice.replace('.', ',')}</b>`;
-    } else {
-        document.getElementById('successMsg').innerHTML = `Deine Bestellung liegt für dich bereit!<br>Bitte halte den Betrag bei Abholung bereit.<br><br><b>Betrag: € ${formattedPrice.replace('.', ',')}</b>`;
+    const { error } = await supabaseClient.from('orders').insert([dataPayload]);
+    if (error) {
+        alert('Datenbankfehler: ' + error.message);
+        return;
     }
 
-    cart = []; 
+    let printPrice = (calculations.grand / 100).toFixed(2);
+    if (isPayPal) {
+        window.open(`https://www.paypal.me/JulianGromadka/${printPrice}`, '_blank');
+        document.getElementById('successMsg').innerHTML = `Bestellung übermittelt!<br>Bitte begleiche den Betrag im geöffneten PayPal-Fenster.<br><br><strong>Betrag: € ${printPrice.replace('.', ',')}</strong>`;
+    } else {
+        document.getElementById('successMsg').innerHTML = `Bestellung für dich reserviert!<br>Bitte bringe den Betrag passend zur Abholung mit.<br><br><strong>Betrag: € ${printPrice.replace('.', ',')}</strong>`;
+    }
+
+    cart = [];
     localStorage.removeItem('vaux_cart');
     updateCartCount();
     showView('viewSuccess');
-    return true;
 }
