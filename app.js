@@ -1,3 +1,4 @@
+js:
 // ==========================================================================
 // 1. SETTINGS & IMMUTABLE CONFIG
 // ==========================================================================
@@ -152,26 +153,12 @@ function changeQty(mod) {
 function toggleCart() {
     document.getElementById('cartOverlay').classList.toggle('open');
     document.getElementById('cartPanel').classList.toggle('open');
-
-    if (document.getElementById('cartPanel').classList.contains('open')) {
-        showView('viewItems');
-    }
 }
 
 function showView(viewId) {
-    document.querySelectorAll('.drawer-view').forEach(view => {
-        view.classList.remove('active');
-    });
-
+    document.querySelectorAll('.drawer-view').forEach(v => v.classList.remove('active'));
     document.getElementById(viewId).classList.add('active');
-
-    const checkoutOptions = document.getElementById('checkoutOptions');
-
-    if (viewId === 'viewItems' && cart.length > 0) {
-        checkoutOptions.style.display = 'grid';
-    } else {
-        checkoutOptions.style.display = 'none';
-    }
+    document.getElementById('checkoutOptions').style.display = (viewId === 'viewItems' && cart.length > 0) ? 'grid' : 'none';
 }
 
 function addToCart() {
@@ -224,13 +211,9 @@ function renderCartItems() {
     if (!box) return;
 
     if (cart.length === 0) {
-    box.innerHTML = `<div class="cart-empty">Dein Warenkorb ist leer.</div>`;
-    totalField.innerText = '€ 0,00';
-
-    document.getElementById('checkoutOptions').style.display = 'none';
-
-    return;
-}
+        box.innerHTML = `<div class="cart-empty">Dein Warenkorb ist leer.</div>`;
+        totalField.innerText = '€ 0,00';
+        return;
     }
 
     box.innerHTML = '';
@@ -269,9 +252,6 @@ function renderCartItems() {
     box.appendChild(costRow);
 
     totalField.innerText = `€ ${(data.grand / 100).toFixed(2).replace('.', ',')}`;
-if (document.getElementById('viewItems').classList.contains('active')) {
-    document.getElementById('checkoutOptions').style.display = 'grid';
-}
 }
 
 function updateCartQty(idx, mod) {
