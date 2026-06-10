@@ -152,6 +152,10 @@ function changeQty(mod) {
 function toggleCart() {
     document.getElementById('cartOverlay').classList.toggle('open');
     document.getElementById('cartPanel').classList.toggle('open');
+
+    if (document.getElementById('cartPanel').classList.contains('open')) {
+        showView('viewItems');
+    }
 }
 
 function showView(viewId) {
