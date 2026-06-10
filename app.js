@@ -33,10 +33,9 @@ async function loadProduct(slug) {
     currentProduct = product;
     activeImages = product.images || [];
 
-    // Titel befüllen (Bricht den Namen nur noch nach dem Doppelpunkt um)
-const originalName = product.name || '';
-document.getElementById('prodName').innerHTML = originalName.replace(': ', ':<br>');
-document.getElementById('prodSubtitle').innerText = product.subtitle || '';
+    // Titel befüllen (Gibt den Namen jetzt 1:1 und ohne falsche Umbrüche aus)
+    document.getElementById('prodName').innerHTML = product.name || '';
+    document.getElementById('prodSubtitle').innerText = product.subtitle || '';
     document.getElementById('prodPrice').innerText = `€ ${(product.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
 
     setupGallery();
@@ -54,7 +53,7 @@ function setupGallery() {
     mainImg.src = activeImages[0];
     thumbStrip.innerHTML = ''; 
     thumbDots.innerHTML = '';
-    
+
     activeImages.forEach((imgUrl, index) => {
         const thumb = document.createElement('div');
         thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
@@ -80,30 +79,34 @@ function switchImg(index, element) {
     document.querySelectorAll('.thumb-dot').forEach((d, i) => d.classList.toggle('active', i === index));
 }
 
-// 4. GRÖSSEN GENERIEREN & NEU SORTIEREN (Mit genauer Lagerbestandsanzeige)
+// 4. GRÖSSEN GENERIEREN & NEU SORTIEREN (Mit Live-Lagerbestandsanzeige)
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
     sizeGrid.innerHTML = '';
     
+    // Fallback-Bestände, falls in der Supabase-Datenbank noch keine Werte eingetragen sind
+    const fallbackStock = { 'S': 1, 'M': 8, 'L': 19, 'XL': 10, '2XL': 8, '3XL': 4 };
+
+    // Wenn aus der DB keine Varianten kommen, erstellen wir temporäre Objekte zum Anzeigen
+    let finaleVarianten = (variants && variants.length > 0) ? variants : Object.keys(fallbackStock).map(size => ({ size, stock: fallbackStock[size] }));
+
     // Reihenfolge-Schema für korrekte Sortierung im Frontend
     const sizeOrder = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
-    variants.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
+    finaleVarianten.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
     
-    variants.forEach(variant => {
+    finaleVarianten.forEach(variant => {
         const btn = document.createElement('button');
         btn.className = 'size-btn';
         
-        // Nutzt den echten Stock aus der DB. Falls dieser noch nicht stimmt, 
-        // greift das Fallback-Objekt mit deinen exakten Werten gr_stock:
-        const staticStock = { 'S': 1, 'M': 8, 'L': 19, 'XL': 10, '2XL': 8, '3XL': 4 };
-        const currentStock = (variant.stock !== undefined && variant.stock !== null) ? variant.stock : (staticStock[variant.size] || 0);
+        // Nutzt den echten DB-Stock oder greift auf das Fallback-Sicherheitsnetz mit deinen Zahlen zurück
+        const currentStock = (variant.stock !== undefined && variant.stock !== null) ? variant.stock : (fallbackStock[variant.size] || 0);
 
-        // Text für den Button generieren (z.B. "M (8 Stk.)")
         if (currentStock <= 0) {
             btn.disabled = true;
             btn.style.opacity = '0.3';
             btn.innerText = `${variant.size} (Ausv.)`;
         } else {
+            // Zeigt die Größe und die exakte Anzahl an (z.B. "M (8 Stk.)")
             btn.innerText = `${variant.size} (${currentStock} Stk.)`;
             
             btn.onclick = () => {
@@ -180,7 +183,6 @@ function renderCartItems() {
     let totals = calculateTotals();
     const shippingEl = document.createElement('div');
     shippingEl.style = "display:flex; justify-content:space-between; padding:0.5rem 0; font-size:0.9rem; color:#555; border-top:1px dashed #222; margin-top:1rem;";
-    
     if (currentDeliveryMethod === 'pickup') {
         shippingEl.innerHTML = `<span>Versandart:</span><span>🏪 Selbstabholung</span>`;
     } else {
@@ -201,7 +203,6 @@ function startCheckout(method) {
     const submitBtn = document.getElementById('standardSubmitBtn');
     const payNote = document.getElementById('paymentNote');
     const title = document.getElementById('checkoutTitle');
-    
     if (method === 'shipping') {
         title.innerText = "Lieferadresse";
         addrFields.style.display = "block";
@@ -240,10 +241,8 @@ function validateForm() {
 // 7. BESTELLUNG VERARBEITEN & PAYPAL-LINK ÖFFNEN
 async function submitOrder() {
     if (!validateForm()) return false;
-    
     let totals = calculateTotals();
     let isPayPal = (currentDeliveryMethod === 'shipping');
-    
     const orderData = {
         first_name: document.getElementById('custFirst').value.trim(),
         last_name: document.getElementById('custLast').value.trim(),
@@ -262,9 +261,7 @@ async function submitOrder() {
     if (error) { alert('Fehler beim Absenden.'); console.error(error); return false; }
     
     let formattedPrice = (totals.grandTotal / 100).toFixed(2);
-
     if (isPayPal) {
-        // Öffnet PayPal.me direkt mit dem korrekten Euro-Zahlungsbetrag für Julian Gromadka
         window.open(`https://www.paypal.me/JulianGromadka/${formattedPrice}`, '_blank');
         document.getElementById('successMsg').innerHTML = `Deine Bestellung wurde registriert!<br>Bitte schließe die Zahlung über das geöffnete PayPal-Fenster ab.<br><br><b>Betrag: € ${formattedPrice.replace('.', ',')}</b>`;
     } else {
