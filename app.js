@@ -12,13 +12,17 @@ let currentQty = 1;
 let cart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
 let currentDeliveryMethod = 'pickup';
 
-// FEST DEFINIERTE SUPABASE BILD-URLS
+// DEINE FEST DEFINIERTEN BILDER (Garantiert immer aktiv)
 const activeImages = [
     'https://kmanxvyaluledddvzdxv.supabase.co/storage/v1/object/public/product-images/No.3-(v1).jpg',
     'https://kmanxvyaluledddvzdxv.supabase.co/storage/v1/object/public/product-images/No.3-(v2).jpg'
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Galerie sofort laden, damit die Bilder nicht auf die DB warten müssen
+    setupGallery();
+    
+    // Danach Produkt-Texte und Größen laden
     await loadProduct('beamerhoehle-tshirt-n1');
     updateCartCount();
     renderCartItems();
@@ -28,80 +32,101 @@ document.addEventListener('DOMContentLoaded', async () => {
 // 2. PRODUKTDATEN DYNAMISCH AUS SUPABASE LADEN
 // ==========================================================================
 async function loadProduct(slug) {
-    const { data: product, error } = await supabaseClient
-        .from('shirts')
-        .select(`*, shirt_variants (*)`) 
-        .eq('slug', slug)
-        .maybeSingle(); // Verhindert Abstürze, falls Datenstruktur abweicht
+    try {
+        const { data: product, error } = await supabaseClient
+            .from('shirts')
+            .select(`*, shirt_variants (*)`) 
+            .eq('slug', slug)
+            .maybeSingle();
 
-    if (error) {
-        console.error("Supabase Fehler:", error.message);
+        if (error) console.error("Supabase Fehler:", error.message);
+
+        // Fallback falls DB-Eintrag fehlt, damit die Seite niemals leer bleibt
+        currentProduct = product || {
+            id: 'fallback-id',
+            name: 'KOLLEKTION N°3 T-SHIRT',
+            subtitle: 'Official Beamerhöhle Premium Shirt',
+            price_in_cents: 2999,
+            shirt_variants: []
+        };
+    } catch (e) {
+        console.error("Netzwerkfehler:", e);
+        currentProduct = {
+            id: 'fallback-id',
+            name: 'KOLLEKTION N°3 T-SHIRT',
+            subtitle: 'Official Beamerhöhle Premium Shirt',
+            price_in_cents: 2999,
+            shirt_variants: []
+        };
     }
 
-    // Falls die DB down ist oder Fehler liefert, fülle lokale Fallbacks für die Texte
-    currentProduct = product || {
-        id: 'fallback-id',
-        name: 'KOLLEKTION N°3 T-SHIRT',
-        subtitle: 'Official Beamerhöhle Premium Shirt',
-        price_in_cents: 2999
-    };
-
+    // Texte & Preise einfügen
     document.getElementById('prodName').innerHTML = currentProduct.name || '';
     document.getElementById('prodSubtitle').innerText = currentProduct.subtitle || '';
     document.getElementById('prodPrice').innerText = `€ ${(currentProduct.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
 
-    setupGallery();
+    // Größen generieren
     renderSizeGrid(currentProduct.shirt_variants);
 }
 
 // ==========================================================================
-// 3. IMAGES-GALLERY LOGIK
+// 3. IMAGES-GALLERY LOGIK (Bilder-Slider)
 // ==========================================================================
 function setupGallery() {
     const mainImg = document.getElementById('mainImg');
     const thumbStrip = document.getElementById('thumbStrip');
     const thumbDots = document.getElementById('thumbDots');
     
-    if (!activeImages.length) return;
+    if (!activeImages || activeImages.length === 0) return;
     
+    // Hauptbild setzen
     mainImg.src = activeImages[0];
     thumbStrip.innerHTML = ''; 
     thumbDots.innerHTML = '';
 
+    // Daumenkinos & Mobile-Dots bauen
     activeImages.forEach((imgUrl, index) => {
+        // Desktop Thumbnails
         const thumb = document.createElement('div');
         thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
-        thumb.onclick = () => switchImg(index, thumb);
+        thumb.onclick = () => switchImg(index);
         thumb.innerHTML = `<img src="${imgUrl}">`;
         thumbStrip.appendChild(thumb);
         
+        // Mobile Dots
         const dot = document.createElement('button');
         dot.className = `thumb-dot ${index === 0 ? 'active' : ''}`;
-        dot.onclick = () => switchImg(index, dot);
+        dot.onclick = () => switchImg(index);
         thumbDots.appendChild(dot);
     });
 }
 
-function switchImg(index, element) {
+function switchImg(index) {
     const mainImg = document.getElementById('mainImg');
+    if (!mainImg) return;
+
     mainImg.classList.add('fade');
     setTimeout(() => { 
         mainImg.src = activeImages[index]; 
         mainImg.classList.remove('fade'); 
     }, 200);
 
-    document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
-    document.querySelectorAll('.thumb-dot').forEach((d, i) => d.classList.toggle('active', i === index));
+    // Active-Klassen bei Thumbs & Dots updaten
+    const thumbs = document.querySelectorAll('.thumb');
+    thumbs.forEach((t, i) => t.classList.toggle('active', i === index));
+
+    const dots = document.querySelectorAll('.thumb-dot');
+    dots.forEach((d, i) => d.classList.toggle('active', i === index));
 }
 
 // ==========================================================================
-// 4. GRÖSSEN GENERIEREN (ABGESICHERT GEGEN DATENBANK-AUSFÄLLE)
+// 4. GRÖSSEN GENERIEREN (Garantiert immer da)
 // ==========================================================================
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
+    if (!sizeGrid) return;
     sizeGrid.innerHTML = '';
     
-    // Festes Backup-Lager, falls die Verknüpfung "shirt_variants" leer ist
     const fallbackStock = { 'S': 5, 'M': 8, 'L': 15, 'XL': 10, '2XL': 6, '3XL': 4 };
     
     let finaleVarianten = [];
@@ -324,7 +349,7 @@ function validateForm() {
 }
 
 // ==========================================================================
-// 8. BESTELLUNG VERARBEITEN MIT NEUEN DB-SPALTEN
+// 8. BESTELLUNG VERARBEITEN
 // ==========================================================================
 async function submitOrder() {
     if (!validateForm()) return false;
