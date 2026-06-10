@@ -397,7 +397,9 @@ async function submitOrder() {
         city:      currentDeliveryMethod === 'shipping' ? document.getElementById('custCity').value.trim() : null
     };
 
-    const { error } = await supabaseClient.from('orders').insert([dataPayload]);
+    
+    console.log('PAYLOAD:', JSON.stringify(dataPayload, null, 2));
+const { error } = await supabaseClient.from('orders').insert([dataPayload]);
     if (error) {
         alert('Datenbankfehler: ' + error.message);
         return;
