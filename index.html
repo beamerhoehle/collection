@@ -3,181 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BEAMERHÖHLE | Official Store</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>Kollektion N°3 - CAN`T DRINK WITH US</title>
+    <style>
+        :root {
+            --primary-color: #111111;
+            --accent-color: #0070ba; /* PayPal Blau */
+            --text-color: #333333;
+            --bg-color: #f9f9f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .product-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .product-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Modernes Produktbild Styling */
+        .product-image-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent; /* Kein extra Hintergrund */
+        }
+
+        .product-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px; /* Runde Ecken */
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08); /* Moderner, softer Schatten */
+            transition: transform 0.3s ease;
+        }
+
+        .product-image:hover {
+            transform: scale(1.02);
+        }
+
+        /* Produktdetails */
+        .collection-badge {
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            color: #888888;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin: 0 0 15px 0;
+            color: var(--primary-color);
+            line-height: 1.2;
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+        }
+
+        /* Größen-Auswahl */
+        .size-section {
+            margin-bottom: 25px;
+        }
+
+        .size-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .size-btn {
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .size-btn:hover:not(:disabled) {
+            border-color: var(--primary-color);
+        }
+
+        .size-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .size-btn:disabled {
+            background: #f5f5f5;
+            border-color: #e0e0e0;
+            color: #cccccc;
+            text-decoration: line-through;
+            cursor: not-allowed;
+        }
+
+        /* Lagerbestand Anzeige */
+        .stock-info {
+            margin-top: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            height: 24px; /* Verhindert das Springen des Layouts */
+        }
+
+        .stock-available { color: #2e7d32; }
+        .stock-low { color: #f57c00; }
+        .stock-soldout { color: #c62828; font-weight: 700; }
+
+        /* Kauf-Button */
+        .buy-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 16px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+            margin-bottom: 30px;
+        }
+
+        .buy-btn:hover:not(.disabled) {
+            background-color: #005ea6;
+        }
+
+        .buy-btn.disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Beschreibung & Pflege */
+        .description-section {
+            border-top: 1px solid #eeeeee;
+            padding-top: 25px;
+        }
+
+        .description-section h3 {
+            font-size: 1.1rem;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        .bullet-list {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .bullet-list li {
+            margin-bottom: 6px;
+        }
+
+        .care-instructions {
+            background-color: #f0f0f0;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
 
-    <nav>
-        <a href="#" class="logo">BEAMERHÖHLE</a>
-        <div class="nav-right">
-            <span class="nav-link">Kollektion</span>
-            <button class="cart-btn" onclick="toggleCart()">
-                Warenkorb <span class="cart-count" id="cartCount">0</span>
-            </button>
-        </div>
-    </nav>
+<div class="product-container">
+    
+    <div class="product-image-wrapper">
+        <img src="dein-produktbild.png" alt="CAN`T DRINK WITH US T-Shirt" class="product-image">
+    </div>
 
-    <main class="product-wrap">
-        
-        <section class="gallery">
-            <span class="gallery-label">Kollektion N°3</span>
-            <img id="mainImg" class="gallery-main" src="" alt="Produktansicht">
-            
-            <div id="thumbStrip" class="thumb-strip"></div>
-            
-            <div id="thumbDots" class="thumb-dots"></div>
-        </section>
-
-        <section class="product-info">
-            <span class="category-tag">Kollektion N°3</span>
-            <h1 id="prodName" class="product-name">Lade Produkt...</h1>
-            <p id="prodSubtitle" class="product-subtitle"></p>
-            
-            <div class="divider"></div>
-
-            <div class="price-row">
-                <span id="prodPrice" class="price-main">€ 0,00</span>
-                <span class="price-note">inkl. MwSt.</span>
-            </div>
-
-            <div class="section-label">Größe wählen</div>
-            <div id="sizeGrid" class="size-grid">
+    <div class="product-details">
+        <div class="collection-badge">Kollektion N°3</div>
+        <h1>CAN`T DRINK WITH US</h1>
+        <div class="price">34,90 €</div> <div class="size-section">
+            <div class="size-title">Größe wählen:</div>
+            <div class="size-options" id="sizeOptionsContainer">
                 </div>
-            <div id="sizeError" class="error-msg">Bitte wähle zuerst eine Größe aus.</div>
-
-            <div class="section-label">Anzahl</div>
-            <div class="qty-row">
-                <button class="qty-btn" onclick="changeQty(-1)">−</button>
-                <span id="qtyDisplay">1</span>
-                <button class="qty-btn" onclick="changeQty(1)">+</button>
-            </div>
-
-            <div class="add-btn-wrap">
-                <button class="add-btn" onclick="addToCart()">In den Warenkorb</button>
-            </div>
-
-            <details open>
-                <summary>Beschreibung</summary>
-                <p id="prodDescription">
-                    Schmaler Kragen aus Rippstrick<br>
-                    Strapazierfähiger Stoff mit weicher und ebenmäßiger Oberfläche<br>
-                    Einlaufvorbehandelt<br>
-                    Zeitgemäße Passform mit schlauchförmigem Schnitt<br><br>
-                    185 g/m², 100 % ringgesponnene Baumwolle
-                </p>
-            </details>
-            <details>
-                <summary>Pflegehinweise</summary>
-                <p id="prodCare">Waschbar bis 40 °C, trocknergeeignet.</p>
-            </details>
-            <details>
-                <summary>Versand & Abholung</summary>
-                <p id="prodShipping">Kostenlose Abholung vor Ort oder schneller DHL-Versand (kostenlos ab 2 Artikeln).</p>
-            </details>
-        </section>
-    </main>
-
-    <div id="cartOverlay" class="cart-overlay" onclick="toggleCart()"></div>
-    <div id="cartPanel" class="cart-panel">
-        
-        <div class="cart-header">
-            <span class="cart-title">Warenkorb</span>
-            <button class="close-btn" onclick="toggleCart()">×</button>
+            <div class="stock-info" id="stockDisplay">Bitte wähle eine Größe aus.</div>
         </div>
 
-        <div class="cart-body">
-            
-            <div id="viewItems" class="view active">
-                <div id="cartItemsContainer">
-                    </div>
-            </div>
+        <a href="#" id="payButton" class="buy-btn disabled" target="_blank" onclick="return checkSelection(event)">
+            Direkt per PayPal kaufen
+        </a>
 
-            <div id="viewCheckout" class="view checkout-form">
-                <button class="back-link" onclick="showView('viewItems')">← Zurück</button>
-                <h2 id="checkoutTitle">Bestelldetails</h2>
-                <p class="form-sub">Bitte fülle die Felder aus, um fortzufahren.</p>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Vorname <span class="req">*</span></label>
-                        <input type="text" id="custFirst" placeholder="Max">
-                        <div id="custFirstErr" class="form-error">Vorname erforderlich.</div>
-                    </div>
-                    <div class="form-group">
-                        <label>Nachname <span class="req">*</span></label>
-                        <input type="text" id="custLast" placeholder="Mustermann">
-                        <div id="custLastErr" class="form-error">Nachname erforderlich.</div>
-                    </div>
-                </div>
+        <div class="description-section">
+            <h3>Produktbeschreibung</h3>
+            <ul class="bullet-list">
+                <li>Zeitgemäße Passform mit schlauchförmigem Schnitt</li>
+                <li>Schmaler Kragen aus Rippstrick</li>
+                <li>Strapazierfähiger Stoff mit weicher und ebenmäßiger Oberfläche</li>
+                <li>Einlaufvorbehandelt</li>
+                <li><strong>Material:</strong> 185 g/m², 100 % ringgesponnene Baumwolle</li>
+            </ul>
 
-                <div class="form-row full">
-                    <div class="form-group">
-                        <label>E-Mail-Adresse <span class="req">*</span></label>
-                        <input type="email" id="custEmail" placeholder="max@mustermann.de">
-                        <div id="custEmailErr" class="form-error">Gültige E-Mail erforderlich.</div>
-                    </div>
-                </div>
-
-                <div id="shippingAddressFields" style="display: none;">
-                    <div class="form-row full">
-                        <div class="form-group">
-                            <label>Straße & Hausnummer <span class="req">*</span></label>
-                            <input type="text" id="custStreet" placeholder="Hauptstraße 12">
-                            <div id="custStreetErr" class="form-error">Adresse erforderlich.</div>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 0.4;">
-                            <label>PLZ <span class="req">*</span></label>
-                            <input type="text" id="custZip" placeholder="12345">
-                            <div id="custZipErr" class="form-error">PLZ erforderlich.</div>
-                        </div>
-                        <div class="form-group">
-                            <label>Ort <span class="req">*</span></label>
-                            <input type="text" id="custCity" placeholder="Musterstadt">
-                            <div id="custCityErr" class="form-error">Ort erforderlich.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <button id="standardSubmitBtn" class="pay-btn" onclick="submitOrder()">Verbindlich Bestellen</button>
-                <p id="paymentNote" class="shipping-note">Bezahlung erfolgt bar bei Abholung.</p>
-            </div>
-
-            <div id="viewSuccess" class="view success-view">
-                <div class="success-icon">✓</div>
-                <h2>Danke!</h2>
-                <p id="successMsg"></p>
-            </div>
-
-        </div>
-
-        <div class="cart-footer">
-            <div class="cart-total-row">
-                <span class="total-label">Gesamtsumme:</span>
-                <span id="cartTotal" class="total-amount">€ 0,00</span>
-            </div>
-            
-            <div id="checkoutOptions" class="checkout-options">
-                <button class="checkout-opt-btn" onclick="startCheckout('pickup')">
-                    <span class="opt-icon">🏪</span>
-                    <span class="opt-label">Abholung</span>
-                    <span class="opt-sub">Bar vor Ort</span>
-                </button>
-                <button class="checkout-opt-btn" onclick="startCheckout('shipping')">
-                    <span class="opt-icon">📦</span>
-                    <span class="opt-label">Versand</span>
-                    <span class="opt-sub">Zahlung via PayPal</span>
-                </button>
+            <div class="care-instructions">
+                <strong>Pflegehinweis:</strong> Waschbar bis 40 °C, trocknergeeignet.
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js"></script>
+<script>
+    // Aktueller Live-Lagerbestand
+    const stockData = {
+        "S": 1,
+        "M": 8,
+        "L": 19,
+        "XL": 10,
+        "2XL": 8,
+        "3XL": 4
+    };
+
+    // Basis PayPal Link
+    const paypalBaseUrl = "https://paypal.me/JulianGromadka";
+    let selectedSize = null;
+
+    function initSizes() {
+        const container = document.getElementById('sizeOptionsContainer');
+        container.innerHTML = '';
+
+        Object.keys(stockData).forEach(size => {
+            const button = document.createElement('button');
+            button.className = 'size-btn';
+            button.innerText = size;
+            
+            // Wenn kein Bestand da ist, direkt deaktivieren
+            if (stockData[size] <= 0) {
+                button.disabled = true;
+            }
+
+            button.onclick = () => selectSize(size, button);
+            container.appendChild(button);
+        });
+    }
+
+    function selectSize(size, element) {
+        // Altes Aktiv-Styling entfernen
+        document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('active'));
+        
+        // Neues Aktiv-Styling setzen
+        element.classList.add('active');
+        selectedSize = size;
+
+        // Lagerbestand anzeigen
+        const stock = stockData[size];
+        const stockDisplay = document.getElementById('stockDisplay');
+        const payButton = document.getElementById('payButton');
+
+        if (stock <= 0) {
+            stockDisplay.innerHTML = `<span class="stock-soldout">Ausverkauft</span>`;
+            payButton.classList.add('disabled');
+            payButton.href = "#";
+        } else {
+            if (stock === 1) {
+                stockDisplay.innerHTML = `<span class="stock-low">Nur noch 1 Stück auf Lager!</span>`;
+            } else {
+                stockDisplay.innerHTML = `<span class="stock-available">Auf Lager (${stock} Stück verfügbar)</span>`;
+            }
+            
+            // PayPal-Button aktivieren und mit Text (z.B. der Größe) als Verwendungszweck versehen
+            payButton.classList.remove('disabled');
+            // Fügt die gewählte Größe automatisch an den PayPal-Link an, falls gewünscht (z.B. /34.90EUR für festen Betrag)
+            payButton.href = `${paypalBaseUrl}`; 
+        }
+    }
+
+    function checkSelection(e) {
+        if (!selectedSize || stockData[selectedSize] <= 0) {
+            e.preventDefault();
+            alert("Bitte wähle zuerst eine verfügbare Größe aus.");
+            return false;
+        }
+        
+        // Optionaler Hinweis für den Käufer
+        alert(`Du wirst nun zu PayPal weitergeleitet. Bitte gib bei PayPal im Feld "Mitteilung" deine Wunschgröße (${selectedSize}) und deine Lieferadresse an!`);
+        return true;
+    }
+
+    // Initialisierung beim Laden der Seite
+    window.onload = initSizes;
+</script>
+
 </body>
 </html>
