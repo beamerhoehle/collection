@@ -59,14 +59,14 @@ nav {
   background: #fff;
   color: #000;
   border: none;
-  padding: 0.6rem 1.2rem;
+  padding: 0.6rem 1.4rem;
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
-  border-radius: 0;
-  transition: opacity 0.3s;
+  border-radius: 30px; /* Modern abgerundet als Kapsel */
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -74,14 +74,16 @@ nav {
 
 .cart-btn:hover {
   opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .cart-count {
   background: #000;
   color: #fff;
   font-size: 0.75rem;
-  padding: 0.1rem 0.4rem;
+  padding: 0.2rem 0.5rem;
   font-weight: bold;
+  border-radius: 20px;
 }
 
 /* 3. PRODUCT LAYOUT (RESPONSIVE GRID) */
@@ -93,14 +95,14 @@ nav {
   margin: 0 auto;
 }
 
-/* GALLERY CHANNEL (Modernisiert: Transparenter BG & Runde Ecken) */
+/* GALLERY CHANNEL (Modernisiert: Transparent, abgerundet & edler Schatten) */
 .gallery {
   padding: 3rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: transparent; /* Kein extra Hintergrund-Grau mehr */
+  background-color: transparent; 
   border-right: 1px solid #1a1a1a;
   position: relative;
 }
@@ -121,8 +123,14 @@ nav {
   height: auto;
   aspect-ratio: 1 / 1;
   object-fit: contain;
-  border-radius: 16px; /* Hochmoderne abgerundete Ecken */
-  transition: opacity 0.2s ease-in-out;
+  background: transparent; /* Absolut kein Hintergrund */
+  border-radius: 24px; /* Hochmoderne, extrem weiche Ecken */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); /* Sanfter Tiefeneffekt für das Shirt */
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.gallery-main:hover {
+  transform: scale(1.02); /* Minimaler, edler Zoom-Effekt */
 }
 
 .gallery-main.fade {
@@ -136,25 +144,26 @@ nav {
 }
 
 .thumb {
-  width: 70px;
-  height: 70px;
+  width: 75px;
+  height: 75px;
   border: 1px solid #222;
   cursor: pointer;
-  padding: 0.2rem;
-  background: #0a0a0a;
-  border-radius: 8px; /* Auch Thumbnails elegant abrunden */
-  transition: border-color 0.3s;
+  padding: 0.3rem;
+  background: transparent;
+  border-radius: 12px; /* Thumbnails passend abgerundet */
+  transition: all 0.3s ease;
 }
 
 .thumb:hover, .thumb.active {
   border-color: #fff;
+  transform: translateY(-2px);
 }
 
 .thumb img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .thumb-dots {
@@ -235,16 +244,19 @@ nav {
 .size-btn {
   background: transparent;
   color: #fff;
-  border: 1px solid #333;
+  border: 1px solid #222;
   padding: 1rem;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.3s;
+  border-radius: 10px; /* Moderne abgerundete Größen-Buttons */
+  transition: all 0.2s ease;
   text-transform: uppercase;
+  font-weight: 500;
 }
 
 .size-btn:hover:not(:disabled) {
   border-color: #fff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .size-btn.selected {
@@ -268,30 +280,38 @@ nav {
 .qty-row {
   display: flex;
   align-items: center;
-  border: 1px solid #333;
+  border: 1px solid #222;
   width: max-content;
   margin-bottom: 2.5rem;
+  border-radius: 30px; /* Kapsel-Design für den Counter */
+  overflow: hidden;
+  padding: 0 0.5rem;
 }
 
 .qty-btn {
   background: transparent;
   color: #fff;
   border: none;
-  width: 3.5rem;
-  height: 3rem;
+  width: 2.5rem;
+  height: 2.5rem;
   font-size: 1.2rem;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 }
 
 .qty-btn:hover {
-  background: #111;
+  background: #1a1a1a;
 }
 
 #qtyDisplay {
   width: 3rem;
   text-align: center;
   font-size: 1rem;
+  font-weight: 500;
 }
 
 /* ADD BUTTON */
@@ -306,15 +326,18 @@ nav {
   border: none;
   padding: 1.2rem;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 2px;
   cursor: pointer;
-  transition: opacity 0.3s;
+  border-radius: 14px; /* Weiche Ecken für den Haupt-Button */
+  transition: all 0.3s ease;
 }
 
 .add-btn:hover {
-  opacity: 0.9;
+  opacity: 0.95;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
 }
 
 /* DETAILS (ACCORDION) */
@@ -371,7 +394,8 @@ details p {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px); /* Blur-Effekt für den Background bei offenem Warenkorb */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s ease;
@@ -391,7 +415,7 @@ details p {
   max-width: 480px;
   height: 100vh;
   background: #0d0d0d;
-  box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+  box-shadow: -10px 0 40px rgba(0,0,0,0.6);
   transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 101;
   display: flex;
@@ -476,10 +500,10 @@ details p {
   width: 80px;
   height: 80px;
   object-fit: contain;
-  background: #050505;
+  background: transparent; /* Transparent im Warenkorb */
   border: 1px solid #1a1a1a;
   padding: 0.2rem;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .cart-item-info {
@@ -511,6 +535,8 @@ details p {
   display: flex;
   align-items: center;
   border: 1px solid #222;
+  border-radius: 20px;
+  padding: 0 0.2rem;
 }
 
 .cart-qty-btn {
@@ -520,6 +546,11 @@ details p {
   width: 2rem;
   height: 2rem;
   cursor: pointer;
+  border-radius: 50%;
+}
+
+.cart-qty-btn:hover {
+  background: #1a1a1a;
 }
 
 .cart-qty-val {
@@ -606,7 +637,8 @@ details p {
   padding: 0.8rem;
   color: #fff;
   font-size: 0.9rem;
-  border-radius: 0;
+  border-radius: 10px; /* Moderne inputs mit runden Ecken */
+  transition: border-color 0.3s;
 }
 
 .form-group input:focus {
@@ -641,6 +673,13 @@ details p {
   letter-spacing: 1px;
   margin-top: 1rem;
   cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.pay-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .shipping-note {
@@ -716,6 +755,7 @@ details p {
   padding: 1rem;
   color: #fff;
   cursor: pointer;
+  border-radius: 12px; /* Abgerundete Optionen */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -767,6 +807,7 @@ details p {
   .gallery-main {
     max-width: 100%;
     padding: 1rem;
+    box-shadow: none; /* Auf Mobile flacher für bessere Performance */
   }
 
   .thumb-strip {
