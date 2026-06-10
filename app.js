@@ -310,6 +310,17 @@ async function submitOrder() {
     let totals = calculateTotals();
     let isPayPal = (currentDeliveryMethod === 'shipping');
     
+    // Bereite die lesbaren Spaltendaten aus dem Warenkorb-Array vor
+    let groesseText = "";
+    let gesamtAnzahl = 0;
+    
+    if (cart.length > 0) {
+        // Verbindet Größen kommagetrennt, falls mehrere verschiedene im Warenkorb liegen (z.B. "M, XL")
+        groesseText = cart.map(item => item.size).join(', ');
+        // Rechnet alle bestellten Stückzahlen zusammen
+        gesamtAnzahl = cart.reduce((sum, item) => sum + item.qty, 0);
+    }
+    
     const orderData = {
         first_name: document.getElementById('custFirst').value.trim(),
         last_name: document.getElementById('custLast').value.trim(),
@@ -318,7 +329,9 @@ async function submitOrder() {
         payment_method: isPayPal ? 'PayPal' : 'Bar',
         payment_status: isPayPal ? 'Bezahlt via PayPal' : 'offen',
         total_amount_in_cents: totals.grandTotal,
-        cart_items: cart, // Enthält Name, Größe, Einzelpreis und Anzahl pro Item
+        cart_items: cart,             // Speichert das vollständige JSON-Array als Backup
+        selected_size: groesseText,    // Schreibt die Größe direkt lesbar in deine Supabase-Textspalte
+        total_quantity: gesamtAnzahl,  // Schreibt die Anzahl direkt lesbar in deine Supabase-Zahlenspalte
         status: 'pending',
         street: isPayPal ? document.getElementById('custStreet').value.trim() : null,
         zip_code: isPayPal ? document.getElementById('custZip').value.trim() : null,
