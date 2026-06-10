@@ -25,11 +25,17 @@
         
         <section class="gallery">
             <span class="gallery-label">Kollektion N°3</span>
-            <img id="mainImg" class="gallery-main" src="" alt="Produktansicht">
             
-            <div id="thumbStrip" class="thumb-strip"></div>
+            <div class="slider-container">
+                <button class="slider-arrow prev" id="sliderPrev">&10216;</button>
+                <button class="slider-arrow next" id="sliderNext">&10217;</button>
+                
+                <div class="slider-wrapper" id="sliderWrapper">
+                    <img id="mainImg" class="gallery-main" src="" alt="Produktansicht">
+                </div>
+            </div>
             
-            <div id="thumbDots" class="thumb-dots"></div>
+            <div id="thumbDots" class="slider-dots"></div>
         </section>
 
         <section class="product-info">
@@ -45,8 +51,7 @@
             </div>
 
             <div class="section-label">Größe wählen</div>
-            <div id="sizeGrid" class="size-grid">
-                </div>
+            <div id="sizeGrid" class="size-grid"></div>
             <div id="sizeError" class="error-msg">Bitte wähle zuerst eine Größe aus.</div>
 
             <div class="section-label">Anzahl</div>
@@ -92,8 +97,7 @@
         <div class="cart-body">
             
             <div id="viewItems" class="view active">
-                <div id="cartItemsContainer">
-                    </div>
+                <div id="cartItemsContainer"></div>
             </div>
 
             <div id="viewCheckout" class="view checkout-form">
