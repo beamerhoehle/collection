@@ -1,4 +1,3 @@
-
 // ==========================================================================
 // 1. SETTINGS & IMMUTABLE CONFIG
 // ==========================================================================
@@ -14,21 +13,20 @@ let currentSlideIndex = 0;
 let cart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
 let currentDeliveryMethod = 'pickup';
 
-// DEINE FIXEN BILD-URLS FÜR DEN MODERNEN SLIDER
 const activeImages = [
     'https://kmanxvyaluledddvzdxv.supabase.co/storage/v1/object/public/product-images/No.3-(v1).jpg',
     'https://kmanxvyaluledddvzdxv.supabase.co/storage/v1/object/public/product-images/No.3-(v2).jpg'
 ];
 
 document.addEventListener('DOMContentLoaded', async () => {
-    buildCarousel(); // Baut den echten Slider auf
+    buildCarousel();
     await loadProductData('beamerhoehle-tshirt-n1');
     updateCartCount();
     renderCartItems();
-}
+});
 
 // ==========================================================================
-// 2. MODERN CAROUSEL / SLIDER LOGIK
+// 2. CAROUSEL / SLIDER
 // ==========================================================================
 function buildCarousel() {
     const track = document.getElementById('carouselTrack');
@@ -39,13 +37,11 @@ function buildCarousel() {
     dotsContainer.innerHTML = '';
 
     activeImages.forEach((url, idx) => {
-        // Slide Element erstellen
         const slide = document.createElement('div');
         slide.className = 'carousel-slide';
         slide.innerHTML = `<img src="${url}" alt="Produktansicht ${idx + 1}">`;
         track.appendChild(slide);
 
-        // Dot erstellen
         const dot = document.createElement('button');
         dot.className = `c-dot ${idx === 0 ? 'active' : ''}`;
         dot.onclick = () => jumpToSlide(idx);
@@ -70,15 +66,13 @@ function updateSliderUI() {
     if (track) {
         track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
     }
-    // Update Dots active State
-    const dots = document.querySelectorAll('.c-dot');
-    dots.forEach((dot, idx) => {
+    document.querySelectorAll('.c-dot').forEach((dot, idx) => {
         dot.classList.toggle('active', idx === currentSlideIndex);
     });
 }
 
 // ==========================================================================
-// 3. PRODUKTDATEN & GRÖSSEN AUS DER DB HOLEN
+// 3. PRODUKTDATEN & GRÖSSEN AUS DER DB
 // ==========================================================================
 async function loadProductData(slug) {
     try {
@@ -99,9 +93,15 @@ async function loadProductData(slug) {
         };
     } catch (e) {
         console.error("Netzwerkfehler:", e);
+        currentProduct = {
+            id: 'fallback-id',
+            name: 'KOLLEKTION N°3 PREMIUM T-SHIRT',
+            subtitle: 'Official Beamerhöhle Wear',
+            price_in_cents: 2999,
+            shirt_variants: []
+        };
     }
 
-    // Dom-Texte injizieren
     document.getElementById('prodName').innerHTML = currentProduct.name;
     document.getElementById('prodSubtitle').innerText = currentProduct.subtitle;
     document.getElementById('prodPrice').innerText = `€ ${(currentProduct.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
@@ -115,10 +115,12 @@ function buildSizes(variants) {
     grid.innerHTML = '';
 
     const fallbackStock = { 'S': 5, 'M': 10, 'L': 15, 'XL': 12, '2XL': 6, '3XL': 3 };
-    let finalArray = (variants && variants.length > 0) ? variants : Object.keys(fallbackStock).map(s => ({ size: s, stock: fallbackStock[s] }));
+    let finalArray = (variants && variants.length > 0)
+        ? variants
+        : Object.keys(fallbackStock).map(s => ({ size: s, stock: fallbackStock[s] }));
 
     const sizeOrder = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
-    finalArray.sort((a,b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
+    finalArray.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
 
     finalArray.forEach(variant => {
         const btn = document.createElement('button');
@@ -127,7 +129,7 @@ function buildSizes(variants) {
 
         if (stock <= 0) {
             btn.disabled = true;
-            btn.innerText = `${variant.size}`;
+            btn.innerText = variant.size;
         } else {
             btn.innerText = variant.size;
             btn.onclick = () => {
@@ -143,7 +145,7 @@ function buildSizes(variants) {
 }
 
 // ==========================================================================
-// 4. QUANTITY & INTERACTION LAYER
+// 4. QUANTITY & CART INTERACTION
 // ==========================================================================
 function changeQty(mod) {
     currentQty = Math.max(1, currentQty + mod);
@@ -155,10 +157,17 @@ function toggleCart() {
     document.getElementById('cartPanel').classList.toggle('open');
 }
 
+/**
+ * showView — zeigt genau eine drawer-view an.
+ * Verwaltet auch die Sichtbarkeit der Checkout-Buttons im Footer.
+ */
 function showView(viewId) {
     document.querySelectorAll('.drawer-view').forEach(v => v.classList.remove('active'));
     document.getElementById(viewId).classList.add('active');
-    document.getElementById('checkoutOptions').style.display = (viewId === 'viewItems' && cart.length > 0) ? 'grid' : 'none';
+
+    // Footer-Buttons nur auf der Item-Ansicht und nur wenn Artikel im Warenkorb
+    const checkoutOptions = document.getElementById('checkoutOptions');
+    checkoutOptions.style.display = (viewId === 'viewItems' && cart.length > 0) ? 'grid' : 'none';
 }
 
 function addToCart() {
@@ -213,6 +222,7 @@ function renderCartItems() {
     if (cart.length === 0) {
         box.innerHTML = `<div class="cart-empty">Dein Warenkorb ist leer.</div>`;
         totalField.innerText = '€ 0,00';
+        document.getElementById('checkoutOptions').style.display = 'none';
         return;
     }
 
@@ -221,7 +231,7 @@ function renderCartItems() {
         const div = document.createElement('div');
         div.className = 'cart-item';
         div.innerHTML = `
-            <img src="${item.image}">
+            <img src="${item.image}" alt="${item.name}">
             <div class="cart-item-details">
                 <div class="item-meta">
                     <h5>${item.name}</h5>
@@ -233,7 +243,7 @@ function renderCartItems() {
                         <span>${item.qty}</span>
                         <button onclick="updateCartQty(${idx}, 1)">+</button>
                     </div>
-                    <span style="font-weight:600;">€ ${((item.price * item.qty)/100).toFixed(2).replace('.', ',')}</span>
+                    <span style="font-weight:600;">€ ${((item.price * item.qty) / 100).toFixed(2).replace('.', ',')}</span>
                 </div>
                 <button class="del-btn" onclick="killCartItem(${idx})">Entfernen</button>
             </div>
@@ -241,9 +251,10 @@ function renderCartItems() {
         box.appendChild(div);
     });
 
-    let data = getTotals();
+    // Versand-/Abholhinweis
+    const data = getTotals();
     const costRow = document.createElement('div');
-    costRow.style = "display:flex; justify-content:space-between; margin-top:1.5rem; padding-top:1rem; border-top:1px dashed var(--border-color); font-size:0.85rem; color:var(--text-muted);";
+    costRow.className = 'cart-cost-row';
     if (currentDeliveryMethod === 'pickup') {
         costRow.innerHTML = `<span>Option:</span><span>🏪 Selbstabholung</span>`;
     } else {
@@ -252,6 +263,9 @@ function renderCartItems() {
     box.appendChild(costRow);
 
     totalField.innerText = `€ ${(data.grand / 100).toFixed(2).replace('.', ',')}`;
+
+    // Footer-Buttons einblenden wenn Artikel da
+    document.getElementById('checkoutOptions').style.display = 'grid';
 }
 
 function updateCartQty(idx, mod) {
@@ -266,81 +280,101 @@ function killCartItem(idx) {
 }
 
 // ==========================================================================
-// 6. MODERN CHECKOUT CONTROLLER
+// 6. CHECKOUT CONTROLLER — strikte Trennung Abholung / Versand
 // ==========================================================================
 function startCheckout(method) {
     currentDeliveryMethod = method;
-    renderCartItems();
-    
-    const adr = document.getElementById('shippingAddressFields');
-    const pick = document.getElementById('pickupPaymentSelect');
-    const subBtn = document.getElementById('standardSubmitBtn');
-    const title = document.getElementById('checkoutTitle');
+    renderCartItems(); // Gesamtbetrag neu berechnen
 
     if (method === 'shipping') {
-        title.innerText = "Lieferadresse";
-        adr.style.display = "block";
-        pick.style.display = "none";
-        subBtn.innerText = "Zu PayPal & Bestellen";
+        showView('viewCheckoutShipping');
     } else {
-        title.innerText = "Abholer-Details";
-        adr.style.display = "none";
-        pick.style.display = "block";
-        updatePickupPaymentNote();
+        updatePickupPaymentNote(); // Note & Button-Text initialisieren
+        showView('viewCheckoutPickup');
     }
-    showView('viewCheckout');
 }
 
+/**
+ * Aktualisiert den Hinweistext und den Button-Text bei der Abholung
+ * je nach gewählter Zahlungsart.
+ */
 function updatePickupPaymentNote() {
-    const subBtn = document.getElementById('standardSubmitBtn');
+    const submitBtn = document.getElementById('pickupSubmitBtn');
     const note = document.getElementById('paymentNote');
-    const value = document.querySelector('input[name="pickupPayment"]:checked').value;
+    const checkedRadio = document.querySelector('input[name="pickupPayment"]:checked');
+    if (!checkedRadio) return;
 
-    if (value === 'PayPal') {
-        subBtn.innerText = "Zu PayPal & Bestellen";
+    if (checkedRadio.value === 'PayPal') {
+        submitBtn.innerText = "Zu PayPal & Bestellen";
         note.innerText = "Zahlung erfolgt direkt via PayPal.me.";
     } else {
-        subBtn.innerText = "Verbindlich Reservieren";
+        submitBtn.innerText = "Verbindlich Reservieren";
         note.innerText = "Bezahlung erfolgt bar bei Abholung.";
     }
 }
 
+// ==========================================================================
+// 7. FORMULAR-VALIDIERUNG
+// ==========================================================================
 function validateForm() {
     let ok = true;
-    const f = (id) => document.getElementById(id).value.trim();
-    const err = (id, show) => document.getElementById(id).classList.toggle('show', show);
 
-    if (!f('custFirst')) { err('custFirstErr', true); ok = false; } else { err('custFirstErr', false); }
-    if (!f('custLast')) { err('custLastErr', true); ok = false; } else { err('custLastErr', false); }
-    if (!f('custEmail') || !f('custEmail').includes('@')) { err('custEmailErr', true); ok = false; } else { err('custEmailErr', false); }
+    const val = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+    };
+    const err = (id, show) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('show', show);
+    };
 
-    if (currentDeliveryMethod === 'shipping') {
-        if (!f('custStreet')) { err('custStreetErr', true); ok = false; } else { err('custStreetErr', false); }
-        if (!f('custZip')) { err('custZipErr', true); ok = false; } else { err('custZipErr', false); }
-        if (!f('custCity')) { err('custCityErr', true); ok = false; } else { err('custCityErr', false); }
+    if (currentDeliveryMethod === 'pickup') {
+        if (!val('pickupFirst'))  { err('pickupFirstErr', true); ok = false; } else { err('pickupFirstErr', false); }
+        if (!val('pickupLast'))   { err('pickupLastErr', true); ok = false; } else { err('pickupLastErr', false); }
+        if (!val('pickupEmail') || !val('pickupEmail').includes('@')) { err('pickupEmailErr', true); ok = false; } else { err('pickupEmailErr', false); }
+    } else {
+        if (!val('shipFirst'))  { err('shipFirstErr', true); ok = false; } else { err('shipFirstErr', false); }
+        if (!val('shipLast'))   { err('shipLastErr', true); ok = false; } else { err('shipLastErr', false); }
+        if (!val('shipEmail') || !val('shipEmail').includes('@')) { err('shipEmailErr', true); ok = false; } else { err('shipEmailErr', false); }
+        if (!val('custStreet')) { err('custStreetErr', true); ok = false; } else { err('custStreetErr', false); }
+        if (!val('custZip'))    { err('custZipErr', true); ok = false; } else { err('custZipErr', false); }
+        if (!val('custCity'))   { err('custCityErr', true); ok = false; } else { err('custCityErr', false); }
     }
+
     return ok;
 }
 
+// ==========================================================================
+// 8. BESTELLUNG ABSENDEN
+// ==========================================================================
 async function submitOrder() {
     if (!validateForm()) return;
-    let calculations = getTotals();
+
+    const calculations = getTotals();
 
     let payMethod = 'Bar';
+    let firstName, lastName, email;
+
     if (currentDeliveryMethod === 'shipping') {
         payMethod = 'PayPal';
+        firstName = document.getElementById('shipFirst').value.trim();
+        lastName  = document.getElementById('shipLast').value.trim();
+        email     = document.getElementById('shipEmail').value.trim();
     } else {
         payMethod = document.querySelector('input[name="pickupPayment"]:checked').value;
+        firstName = document.getElementById('pickupFirst').value.trim();
+        lastName  = document.getElementById('pickupLast').value.trim();
+        email     = document.getElementById('pickupEmail').value.trim();
     }
 
-    let isPayPal = (payMethod === 'PayPal');
-    let finalSizes = cart.map(i => `${i.size} (${i.qty}x)`).join(', ');
-    let finalQty = cart.reduce((acc, i) => acc + i.qty, 0);
+    const isPayPal = (payMethod === 'PayPal');
+    const finalSizes = cart.map(i => `${i.size} (${i.qty}x)`).join(', ');
+    const finalQty = cart.reduce((acc, i) => acc + i.qty, 0);
 
     const dataPayload = {
-        first_name: document.getElementById('custFirst').value.trim(),
-        last_name: document.getElementById('custLast').value.trim(),
-        email: document.getElementById('custEmail').value.trim(),
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
         delivery_method: currentDeliveryMethod,
         payment_method: payMethod,
         payment_status: isPayPal ? 'Bezahlt via PayPal' : 'offen',
@@ -349,9 +383,9 @@ async function submitOrder() {
         selected_size: finalSizes,
         total_quantity: finalQty,
         status: 'pending',
-        street: currentDeliveryMethod === 'shipping' ? document.getElementById('custStreet').value.trim() : null,
-        zip_code: currentDeliveryMethod === 'shipping' ? document.getElementById('custZip').value.trim() : null,
-        city: currentDeliveryMethod === 'shipping' ? document.getElementById('custCity').value.trim() : null
+        street:    currentDeliveryMethod === 'shipping' ? document.getElementById('custStreet').value.trim() : null,
+        zip_code:  currentDeliveryMethod === 'shipping' ? document.getElementById('custZip').value.trim() : null,
+        city:      currentDeliveryMethod === 'shipping' ? document.getElementById('custCity').value.trim() : null
     };
 
     const { error } = await supabaseClient.from('orders').insert([dataPayload]);
@@ -360,12 +394,15 @@ async function submitOrder() {
         return;
     }
 
-    let printPrice = (calculations.grand / 100).toFixed(2);
+    const printPrice = (calculations.grand / 100).toFixed(2);
+
     if (isPayPal) {
         window.open(`https://www.paypal.me/JulianGromadka/${printPrice}`, '_blank');
-        document.getElementById('successMsg').innerHTML = `Bestellung übermittelt!<br>Bitte begleiche den Betrag im geöffneten PayPal-Fenster.<br><br><strong>Betrag: € ${printPrice.replace('.', ',')}</strong>`;
+        document.getElementById('successMsg').innerHTML =
+            `Bestellung übermittelt!<br>Bitte begleiche den Betrag im geöffneten PayPal-Fenster.<br><br><strong>Betrag: € ${printPrice.replace('.', ',')}</strong>`;
     } else {
-        document.getElementById('successMsg').innerHTML = `Bestellung für dich reserviert!<br>Bitte bringe den Betrag passend zur Abholung mit.<br><br><strong>Betrag: € ${printPrice.replace('.', ',')}</strong>`;
+        document.getElementById('successMsg').innerHTML =
+            `Bestellung für dich reserviert!<br>Bitte bringe den Betrag passend zur Abholung mit.<br><br><strong>Betrag: € ${printPrice.replace('.', ',')}</strong>`;
     }
 
     cart = [];
