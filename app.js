@@ -78,6 +78,7 @@ function setupGallery() {
     sliderWrapper.style.transform = `translateX(0%)`;
 }
 
+// Slider-Pfeile mit Logik verknüpfen
 function setupSliderControls() {
     document.getElementById('sliderPrev').onclick = () => moveSlider(sliderIndex - 1);
     document.getElementById('sliderNext').onclick = () => moveSlider(sliderIndex + 1);
@@ -100,7 +101,7 @@ function moveSlider(targetIndex) {
 }
 
 // ==========================================================================
-// 4. GRÖSSEN GENERIEREN (Mit exakter Lagerbestandsanzeige & Fallback)
+// 4. GRÖSSEN GENERIEREN (Mit exakter Lagerbestandsanzeige)
 // ==========================================================================
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
