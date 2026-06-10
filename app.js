@@ -25,9 +25,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadProduct(slug) {
     const { data: product, error } = await supabaseClient
         .from('shirts')
-        .select(`*, shirt_variants (*)`)
+       .select(`*, shirt_variants (*).order(size.asc)`) 
         .eq('slug', slug)
         .single();
+
+    if (error) {
+        document.getElementById('prodName').innerHTML = `FEHLER:<br><span style="color:red;">${error.message}</span>`;
+        return;
+    }
 
     if (error) {
         document.getElementById('prodName').innerHTML = `FEHLER:<br><span style="color:red;">${error.message}</span>`;
