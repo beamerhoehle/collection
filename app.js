@@ -255,6 +255,9 @@ function renderCartItems() {
     box.appendChild(costRow);
 
     totalField.innerText = `€ ${(data.grand / 100).toFixed(2).replace('.', ',')}`;
+if (document.getElementById('viewItems').classList.contains('active')) {
+    document.getElementById('checkoutOptions').style.display = 'grid';
+}
 }
 
 function updateCartQty(idx, mod) {
