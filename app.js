@@ -1,4 +1,6 @@
+// ==========================================================================
 // 1. SUPABASE INITIALISIERUNG
+// ==========================================================================
 const SUPABASE_URL = 'https://kmanxvyaluledddvzdxv.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttYW54dnlhbHVsZWRkZHZ6ZHh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjU5NjIsImV4cCI6MjA5NjYwMTk2Mn0.qBCdrzOo4qSbItETomTJ38Fc4gpvE4dMt5L9rYwMKq8';
 
@@ -17,7 +19,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCartItems();
 });
 
+// ==========================================================================
 // 2. PRODUKTDATEN DYNAMISCH AUS SUPABASE LADEN
+// ==========================================================================
 async function loadProduct(slug) {
     const { data: product, error } = await supabaseClient
         .from('shirts')
@@ -33,7 +37,7 @@ async function loadProduct(slug) {
     currentProduct = product;
     activeImages = product.images || [];
 
-    // Titel befüllen (Gibt den Namen jetzt 1:1 und ohne falsche Umbrüche aus)
+    // Titel befüllen (Gibt den Namen jetzt absolut unverändert & sauber ohne Fremdumbrüche aus)
     document.getElementById('prodName').innerHTML = product.name || '';
     document.getElementById('prodSubtitle').innerText = product.subtitle || '';
     document.getElementById('prodPrice').innerText = `€ ${(product.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
@@ -42,7 +46,9 @@ async function loadProduct(slug) {
     renderSizeGrid(product.shirt_variants);
 }
 
-// 3. IMAGES-GALLERY LOGIK
+// ==========================================================================
+// 3. IMAGES-GALLERY LOGIK (Glow-kompatibel)
+// ==========================================================================
 function setupGallery() {
     const mainImg = document.getElementById('mainImg');
     const thumbStrip = document.getElementById('thumbStrip');
@@ -79,18 +85,20 @@ function switchImg(index, element) {
     document.querySelectorAll('.thumb-dot').forEach((d, i) => d.classList.toggle('active', i === index));
 }
 
-// 4. GRÖSSEN GENERIEREN & NEU SORTIEREN (Mit Live-Lagerbestandsanzeige)
+// ==========================================================================
+// 4. GRÖSSEN GENERIEREN & NEU SORTIEREN (Mit exakter Lagerbestandsanzeige)
+// ==========================================================================
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
     sizeGrid.innerHTML = '';
     
-    // Fallback-Bestände, falls in der Supabase-Datenbank noch keine Werte eingetragen sind
+    // Deine exakten Bestände als Sicherheitsnetz (Fallback), falls DB-Spalten leer sind
     const fallbackStock = { 'S': 1, 'M': 8, 'L': 19, 'XL': 10, '2XL': 8, '3XL': 4 };
 
-    // Wenn aus der DB keine Varianten kommen, erstellen wir temporäre Objekte zum Anzeigen
+    // Verwende DB-Varianten, falls vorhanden, sonst generiere sie aus dem Sicherheitsnetz
     let finaleVarianten = (variants && variants.length > 0) ? variants : Object.keys(fallbackStock).map(size => ({ size, stock: fallbackStock[size] }));
 
-    // Reihenfolge-Schema für korrekte Sortierung im Frontend
+    // Festgelegtes Sortierschema für Bekleidung
     const sizeOrder = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
     finaleVarianten.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
     
@@ -98,7 +106,7 @@ function renderSizeGrid(variants) {
         const btn = document.createElement('button');
         btn.className = 'size-btn';
         
-        // Nutzt den echten DB-Stock oder greift auf das Fallback-Sicherheitsnetz mit deinen Zahlen zurück
+        // Liest den Live-Stock aus oder nutzt das statische Objekt als Fallback
         const currentStock = (variant.stock !== undefined && variant.stock !== null) ? variant.stock : (fallbackStock[variant.size] || 0);
 
         if (currentStock <= 0) {
@@ -106,7 +114,7 @@ function renderSizeGrid(variants) {
             btn.style.opacity = '0.3';
             btn.innerText = `${variant.size} (Ausv.)`;
         } else {
-            // Zeigt die Größe und die exakte Anzahl an (z.B. "M (8 Stk.)")
+            // Generiert die moderne Buttonbeschriftung, z.B. "L (19 Stk.)"
             btn.innerText = `${variant.size} (${currentStock} Stk.)`;
             
             btn.onclick = () => {
@@ -120,9 +128,18 @@ function renderSizeGrid(variants) {
     });
 }
 
-// 5. BASICS
-function changeQty(change) { currentQty = Math.max(1, currentQty + change); document.getElementById('qtyDisplay').innerText = currentQty; }
-function toggleCart() { document.getElementById('cartOverlay').classList.toggle('open'); document.getElementById('cartPanel').classList.toggle('open'); }
+// ==========================================================================
+// 5. WARENKORB BASICS & QUANTITY LOGIK
+// ==========================================================================
+function changeQty(change) { 
+    currentQty = Math.max(1, currentQty + change); 
+    document.getElementById('qtyDisplay').innerText = currentQty; 
+}
+
+function toggleCart() { 
+    document.getElementById('cartOverlay').classList.toggle('open'); 
+    document.getElementById('cartPanel').classList.toggle('open'); 
+}
 
 function showView(viewId) {
     document.querySelectorAll('.cart-body .view').forEach(v => v.classList.remove('active'));
@@ -131,17 +148,41 @@ function showView(viewId) {
 }
 
 function addToCart() {
-    if (!selectedSize) { document.getElementById('sizeError').classList.add('show'); return; }
-    const cartItem = { id: currentProduct.id, name: currentProduct.name, size: selectedSize, price: currentProduct.price_in_cents, qty: currentQty, image: activeImages[0] };
+    if (!selectedSize) { 
+        document.getElementById('sizeError').classList.add('show'); 
+        return; 
+    }
+    const cartItem = { 
+        id: currentProduct.id, 
+        name: currentProduct.name, 
+        size: selectedSize, 
+        price: currentProduct.price_in_cents, 
+        qty: currentQty, 
+        image: activeImages[0] 
+    };
     const idx = cart.findIndex(i => i.id === cartItem.id && i.size === cartItem.size);
-    if (idx > -1) { cart[idx].qty += currentQty; } else { cart.push(cartItem); }
-    saveCart(); toggleCart();
+    if (idx > -1) { 
+        cart[idx].qty += currentQty; 
+    } else { 
+        cart.push(cartItem); 
+    }
+    saveCart(); 
+    toggleCart();
 }
 
-function saveCart() { localStorage.setItem('vaux_cart', JSON.stringify(cart)); updateCartCount(); renderCartItems(); }
-function updateCartCount() { document.getElementById('cartCount').innerText = cart.reduce((t, i) => t + i.qty, 0); }
+function saveCart() { 
+    localStorage.setItem('vaux_cart', JSON.stringify(cart)); 
+    updateCartCount(); 
+    renderCartItems(); 
+}
 
-// 6. VERSANDKOSTEN-BERECHNUNG
+function updateCartCount() { 
+    document.getElementById('cartCount').innerText = cart.reduce((t, i) => t + i.qty, 0); 
+}
+
+// ==========================================================================
+// 6. VERSANDKOSTEN-BERECHNUNG & WARENKORB-RENDERER
+// ==========================================================================
 function calculateTotals() {
     let pTotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
     let totalItems = cart.reduce((s, i) => s + i.qty, 0);
@@ -161,7 +202,8 @@ function renderCartItems() {
     
     container.innerHTML = '';
     cart.forEach((item, index) => {
-        const itemEl = document.createElement('div'); itemEl.className = 'cart-item';
+        const itemEl = document.createElement('div'); 
+        itemEl.className = 'cart-item';
         itemEl.innerHTML = `
             <img src="${item.image}" class="cart-item-img">
             <div class="cart-item-info">
@@ -183,6 +225,7 @@ function renderCartItems() {
     let totals = calculateTotals();
     const shippingEl = document.createElement('div');
     shippingEl.style = "display:flex; justify-content:space-between; padding:0.5rem 0; font-size:0.9rem; color:#555; border-top:1px dashed #222; margin-top:1rem;";
+    
     if (currentDeliveryMethod === 'pickup') {
         shippingEl.innerHTML = `<span>Versandart:</span><span>🏪 Selbstabholung</span>`;
     } else {
@@ -192,9 +235,20 @@ function renderCartItems() {
     totalDisplay.innerText = `€ ${(totals.grandTotal / 100).toFixed(2).replace('.', ',')}`;
 }
 
-function updateQty(index, change) { cart[index].qty += change; if (cart[index].qty <= 0) { cart.splice(index, 1); } saveCart(); }
-function removeItem(index) { cart.splice(index, 1); saveCart(); }
+function updateQty(index, change) { 
+    cart[index].qty += change; 
+    if (cart[index].qty <= 0) { cart.splice(index, 1); } 
+    saveCart(); 
+}
 
+function removeItem(index) { 
+    cart.splice(index, 1); 
+    saveCart(); 
+}
+
+// ==========================================================================
+// 7. CHECKOUT LOGIK & FORMULARVALIDIERUNG
+// ==========================================================================
 function startCheckout(method) {
     currentDeliveryMethod = method;
     renderCartItems();
@@ -203,6 +257,7 @@ function startCheckout(method) {
     const submitBtn = document.getElementById('standardSubmitBtn');
     const payNote = document.getElementById('paymentNote');
     const title = document.getElementById('checkoutTitle');
+    
     if (method === 'shipping') {
         title.innerText = "Lieferadresse";
         addrFields.style.display = "block";
@@ -238,7 +293,9 @@ function validateForm() {
     return valid;
 }
 
-// 7. BESTELLUNG VERARBEITEN & PAYPAL-LINK ÖFFNEN
+// ==========================================================================
+// 8. BESTELLUNG VERARBEITEN & PAYPAL-ANBINDUNG
+// ==========================================================================
 async function submitOrder() {
     if (!validateForm()) return false;
     let totals = calculateTotals();
