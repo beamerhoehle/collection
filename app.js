@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadProductData('beamerhoehle-tshirt-n1');
     updateCartCount();
     renderCartItems();
-});
+}
 
 // ==========================================================================
 // 2. MODERN CAROUSEL / SLIDER LOGIK
