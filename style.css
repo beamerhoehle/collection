@@ -65,7 +65,7 @@ nav {
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
-  border-radius: 30px; /* Modern abgerundet als Kapsel */
+  border-radius: 30px;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -86,7 +86,7 @@ nav {
   border-radius: 20px;
 }
 
-/* 3. PRODUCT LAYOUT (RESPONSIVE GRID) */
+/* 3. PRODUCT LAYOUT & MODERN SLIDER CONTAINER */
 .product-wrap {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -95,7 +95,6 @@ nav {
   margin: 0 auto;
 }
 
-/* GALLERY CHANNEL (Modernisiert: Transparent, abgerundet & edler Schatten) */
 .gallery {
   padding: 3rem;
   display: flex;
@@ -117,57 +116,95 @@ nav {
   text-transform: uppercase;
 }
 
-.gallery-main {
+/* Der neue Slider-Kanal maskiert graue Mockup-Ecken perfekt durch border-radius */
+.slider-container {
+  position: relative;
   width: 100%;
   max-width: 550px;
-  height: auto;
   aspect-ratio: 1 / 1;
-  object-fit: contain;
-  background: transparent; /* Absolut kein Hintergrund */
-  border-radius: 24px; /* Hochmoderne, extrem weiche Ecken */
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); /* Sanfter Tiefeneffekt für das Shirt */
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  overflow: hidden; 
+  border-radius: 24px; /* Hochmoderne, extrem weiche Eckenabrundung */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
-.gallery-main:hover {
-  transform: scale(1.02); /* Minimaler, edler Zoom-Effekt */
+.slider-wrapper {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gallery-main {
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+  object-fit: cover; /* Verhindert Verzerrungen und füllt den abgerundeten Rahmen */
+  background: transparent;
+  transition: opacity 0.2s ease;
 }
 
 .gallery-main.fade {
   opacity: 0.3;
 }
 
-.thumb-strip {
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.thumb {
-  width: 75px;
-  height: 75px;
-  border: 1px solid #222;
+/* Slider-Pfeile, die sich beim Hovern über den Container einblenden */
+.slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 1.2rem;
   cursor: pointer;
-  padding: 0.3rem;
-  background: transparent;
-  border-radius: 12px; /* Thumbnails passend abgerundet */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  opacity: 0; 
   transition: all 0.3s ease;
 }
 
-.thumb:hover, .thumb.active {
-  border-color: #fff;
-  transform: translateY(-2px);
+.slider-container:hover .slider-arrow {
+  opacity: 1;
 }
 
-.thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: 8px;
+.slider-arrow:hover {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
 }
 
-.thumb-dots {
-  display: none;
+.slider-arrow.prev { left: 1.5rem; }
+.slider-arrow.next { right: 1.5rem; }
+
+/* Schicke, flüssig animierte Punkte unter dem Slider */
+.slider-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 2rem;
+}
+
+.slider-dot {
+  width: 8px;
+  height: 8px;
+  background: #222;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.slider-dot.active {
+  background: #fff;
+  width: 24px;
+  border-radius: 4px;
 }
 
 /* PRODUCT INFO SIDE */
@@ -248,7 +285,7 @@ nav {
   padding: 1rem;
   font-size: 0.9rem;
   cursor: pointer;
-  border-radius: 10px; /* Moderne abgerundete Größen-Buttons */
+  border-radius: 10px;
   transition: all 0.2s ease;
   text-transform: uppercase;
   font-weight: 500;
@@ -283,7 +320,7 @@ nav {
   border: 1px solid #222;
   width: max-content;
   margin-bottom: 2.5rem;
-  border-radius: 30px; /* Kapsel-Design für den Counter */
+  border-radius: 30px;
   overflow: hidden;
   padding: 0 0.5rem;
 }
@@ -330,7 +367,7 @@ nav {
   text-transform: uppercase;
   letter-spacing: 2px;
   cursor: pointer;
-  border-radius: 14px; /* Weiche Ecken für den Haupt-Button */
+  border-radius: 14px;
   transition: all 0.3s ease;
 }
 
@@ -395,7 +432,7 @@ details p {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px); /* Blur-Effekt für den Background bei offenem Warenkorb */
+  backdrop-filter: blur(8px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s ease;
@@ -499,11 +536,10 @@ details p {
 .cart-item-img {
   width: 80px;
   height: 80px;
-  object-fit: contain;
-  background: transparent; /* Transparent im Warenkorb */
+  object-fit: cover; /* Maskiert Bildkanten im Warenkorb */
+  background: #141414;
   border: 1px solid #1a1a1a;
-  padding: 0.2rem;
-  border-radius: 12px;
+  border-radius: 12px; /* Perfekte Abrundung für das Produktbild im Checkout */
 }
 
 .cart-item-info {
@@ -637,7 +673,7 @@ details p {
   padding: 0.8rem;
   color: #fff;
   font-size: 0.9rem;
-  border-radius: 10px; /* Moderne inputs mit runden Ecken */
+  border-radius: 10px;
   transition: border-color 0.3s;
 }
 
@@ -755,7 +791,7 @@ details p {
   padding: 1rem;
   color: #fff;
   cursor: pointer;
-  border-radius: 12px; /* Abgerundete Optionen */
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -790,9 +826,7 @@ details p {
   padding-top: 1rem;
 }
 
-/* ==========================================================================
-   5. MOBILE & TABLET OPTIMIERUNG
-   ========================================================================== */
+/* 5. MOBILE & TABLET OPTIMIERUNG */
 @media (max-width: 968px) {
   .product-wrap {
     grid-template-columns: 1fr;
@@ -804,38 +838,15 @@ details p {
     border-bottom: 1px solid #1a1a1a;
   }
 
-  .gallery-main {
+  .slider-container {
     max-width: 100%;
-    padding: 1rem;
-    box-shadow: none; /* Auf Mobile flacher für bessere Performance */
+    border-radius: 16px;
   }
 
-  .thumb-strip {
-    display: none;
-  }
-
-  .thumb-dots {
-    display: flex;
-    justify-content: center;
-    gap: 0.6rem;
-    margin-top: 1rem;
-  }
-
-  .thumb-dot {
-    width: 8px;
-    height: 8px;
-    background: #333;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    padding: 0;
-  }
-
-  .thumb-dot.active {
-    background: #fff;
-    width: 20px;
-    border-radius: 4px;
-    transition: all 0.3s;
+  .slider-arrow {
+    opacity: 1; /* Pfeile bleiben auf Mobilgeräten sichtbar */
+    width: 42px;
+    height: 42px;
   }
 
   .product-info {
