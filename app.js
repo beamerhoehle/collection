@@ -58,7 +58,6 @@ function setupGallery() {
     
     if (!activeImages.length) return;
     
-    // Befüllt den Slider-Wrapper mit allen verfügbaren Produktbildern
     sliderWrapper.innerHTML = '';
     thumbDots.innerHTML = '';
     
@@ -69,7 +68,6 @@ function setupGallery() {
         img.alt = `Produktansicht ${index + 1}`;
         sliderWrapper.appendChild(img);
         
-        // Generiert minimalistische Navigationspunkte unter dem Slider
         const dot = document.createElement('button');
         dot.className = `slider-dot ${index === 0 ? 'active' : ''}`;
         dot.onclick = () => moveSlider(index);
@@ -98,7 +96,6 @@ function moveSlider(targetIndex) {
     sliderIndex = targetIndex;
     sliderWrapper.style.transform = `translateX(-${sliderIndex * 100}%)`;
     
-    // Aktiviert den passenden Punkt
     document.querySelectorAll('.slider-dot').forEach((d, i) => d.classList.toggle('active', i === sliderIndex));
 }
 
@@ -187,13 +184,13 @@ function saveCart() {
     renderCartItems();
 }
 
+// ==========================================================================
+// 6. VERSANDKOSTEN-BERECHNUNG & WARENKORB-RENDERER
+// ==========================================================================
 function updateCartCount() { 
     document.getElementById('cartCount').innerText = cart.reduce((t, i) => t + i.qty, 0);
 }
 
-// ==========================================================================
-// 6. VERSANDKOSTEN-BERECHNUNG & WARENKORB-RENDERER
-// ==========================================================================
 function calculateTotals() {
     let pTotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
     let totalItems = cart.reduce((s, i) => s + i.qty, 0);
@@ -319,8 +316,9 @@ async function submitOrder() {
         email: document.getElementById('custEmail').value.trim(),
         delivery_method: currentDeliveryMethod,
         payment_method: isPayPal ? 'PayPal' : 'Bar',
+        payment_status: isPayPal ? 'Bezahlt via PayPal' : 'offen',
         total_amount_in_cents: totals.grandTotal,
-        cart_items: cart,
+        cart_items: cart, // Enthält Name, Größe, Einzelpreis und Anzahl pro Item
         status: 'pending',
         street: isPayPal ? document.getElementById('custStreet').value.trim() : null,
         zip_code: isPayPal ? document.getElementById('custZip').value.trim() : null,
@@ -329,7 +327,7 @@ async function submitOrder() {
 
     const { error } = await supabaseClient.from('orders').insert([orderData]);
     if (error) { 
-        alert('Fehler beim Absenden.'); 
+        alert('Fehler beim Absenden der Bestellung an die Datenbank: ' + error.message); 
         console.error(error); 
         return false;
     }
