@@ -210,9 +210,13 @@ function renderCartItems() {
     if (!box) return;
 
     if (cart.length === 0) {
-        box.innerHTML = `<div class="cart-empty">Dein Warenkorb ist leer.</div>`;
-        totalField.innerText = '€ 0,00';
-        return;
+    box.innerHTML = `<div class="cart-empty">Dein Warenkorb ist leer.</div>`;
+    totalField.innerText = '€ 0,00';
+
+    document.getElementById('checkoutOptions').style.display = 'none';
+
+    return;
+}
     }
 
     box.innerHTML = '';
