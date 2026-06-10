@@ -13,14 +13,10 @@ let cart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
 let activeImages = [];
 let currentDeliveryMethod = 'pickup'; // 'pickup' oder 'shipping'
 
-// Slider Index State
-let sliderIndex = 0;
-
 document.addEventListener('DOMContentLoaded', async () => {
     await loadProduct('beamerhoehle-tshirt-n1');
     updateCartCount();
     renderCartItems();
-    setupSliderControls();
 });
 
 // ==========================================================================
@@ -50,53 +46,43 @@ async function loadProduct(slug) {
 }
 
 // ==========================================================================
-// 3. IMAGES-SLIDER INITIALISIERUNG & DOTS GENERIERUNG
+// 3. IMAGES-GALLERY LOGIK
 // ==========================================================================
 function setupGallery() {
-    const sliderWrapper = document.getElementById('sliderWrapper');
+    const mainImg = document.getElementById('mainImg');
+    const thumbStrip = document.getElementById('thumbStrip');
     const thumbDots = document.getElementById('thumbDots');
     
     if (!activeImages.length) return;
     
-    sliderWrapper.innerHTML = '';
+    mainImg.src = activeImages[0];
+    thumbStrip.innerHTML = ''; 
     thumbDots.innerHTML = '';
-    
+
     activeImages.forEach((imgUrl, index) => {
-        const img = document.createElement('img');
-        img.className = 'gallery-main';
-        img.src = imgUrl;
-        img.alt = `Produktansicht ${index + 1}`;
-        sliderWrapper.appendChild(img);
+        const thumb = document.createElement('div');
+        thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
+        thumb.onclick = () => switchImg(index, thumb);
+        thumb.innerHTML = `<img src="${imgUrl}">`;
+        thumbStrip.appendChild(thumb);
         
         const dot = document.createElement('button');
-        dot.className = `slider-dot ${index === 0 ? 'active' : ''}`;
-        dot.onclick = () => moveSlider(index);
+        dot.className = `thumb-dot ${index === 0 ? 'active' : ''}`;
+        dot.onclick = () => switchImg(index, dot);
         thumbDots.appendChild(dot);
     });
-    
-    sliderIndex = 0;
-    sliderWrapper.style.transform = `translateX(0%)`;
 }
 
-function setupSliderControls() {
-    document.getElementById('sliderPrev').onclick = () => moveSlider(sliderIndex - 1);
-    document.getElementById('sliderNext').onclick = () => moveSlider(sliderIndex + 1);
-}
+function switchImg(index, element) {
+    const mainImg = document.getElementById('mainImg');
+    mainImg.classList.add('fade');
+    setTimeout(() => { 
+        mainImg.src = activeImages[index]; 
+        mainImg.classList.remove('fade'); 
+    }, 200);
 
-function moveSlider(targetIndex) {
-    const sliderWrapper = document.getElementById('sliderWrapper');
-    if (!activeImages.length) return;
-
-    if (targetIndex < 0) {
-        targetIndex = activeImages.length - 1;
-    } else if (targetIndex >= activeImages.length) {
-        targetIndex = 0;
-    }
-
-    sliderIndex = targetIndex;
-    sliderWrapper.style.transform = `translateX(-${sliderIndex * 100}%)`;
-    
-    document.querySelectorAll('.slider-dot').forEach((d, i) => d.classList.toggle('active', i === sliderIndex));
+    document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
+    document.querySelectorAll('.thumb-dot').forEach((d, i) => d.classList.toggle('active', i === index));
 }
 
 // ==========================================================================
@@ -143,6 +129,7 @@ function changeQty(change) {
     document.getElementById('qtyDisplay').innerText = currentQty; 
 }
 
+// Nutzt deine originalen Klassen für das korrekte Side-Panel Layout
 function toggleCart() { 
     document.getElementById('cartOverlay').classList.toggle('open'); 
     document.getElementById('cartPanel').classList.toggle('open');
@@ -184,13 +171,13 @@ function saveCart() {
     renderCartItems();
 }
 
-// ==========================================================================
-// 6. VERSANDKOSTEN-BERECHNUNG & WARENKORB-RENDERER
-// ==========================================================================
 function updateCartCount() { 
     document.getElementById('cartCount').innerText = cart.reduce((t, i) => t + i.qty, 0);
 }
 
+// ==========================================================================
+// 6. VERSANDKOSTEN-BERECHNUNG & WARENKORB-RENDERER
+// ==========================================================================
 function calculateTotals() {
     let pTotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
     let totalItems = cart.reduce((s, i) => s + i.qty, 0);
@@ -265,15 +252,17 @@ function startCheckout(method) {
     const addrFields = document.getElementById('shippingAddressFields');
     const pickupPayFields = document.getElementById('pickupPaymentSelect');
     const submitBtn = document.getElementById('standardSubmitBtn');
+    const payNote = document.getElementById('paymentNote');
+    const title = document.getElementById('checkoutTitle');
 
     if (method === 'shipping') {
-        document.getElementById('checkoutTitle').innerText = "Lieferadresse";
+        title.innerText = "Lieferadresse";
         addrFields.style.display = "block";
         pickupPayFields.style.display = "none"; 
         submitBtn.innerText = "Zu PayPal & Bestellen";
-        document.getElementById('paymentNote').innerText = "Sichere Zahlungsweiterleitung über PayPal.me.";
+        payNote.innerText = "Sichere Zahlungsweiterleitung über PayPal.me.";
     } else {
-        document.getElementById('checkoutTitle').innerText = "Abholerdetails";
+        title.innerText = "Abholerdetails";
         addrFields.style.display = "none";
         pickupPayFields.style.display = "block"; 
         updatePickupPaymentNote(); 
@@ -290,7 +279,7 @@ function updatePickupPaymentNote() {
         submitBtn.innerText = "Zu PayPal & Bestellen";
         payNote.innerText = "Direkte Bezahlung via PayPal.me bei der Bestellung.";
     } else {
-        submitBtn.innerText = "Verbindlich Bestellen (Bar)";
+        submitBtn.innerText = "Verbindlich Bestellen";
         payNote.innerText = "Bezahlung erfolgt bar bei Abholung vor Ort.";
     }
 }
@@ -317,13 +306,12 @@ function validateForm() {
 }
 
 // ==========================================================================
-// 8. BESTELLUNG VERARBEITEN & PAYPAL-ANBINDUNG
+// 8. BESTELLUNG VERARBEITEN MIT NEUEN DB-SPALTEN
 // ==========================================================================
 async function submitOrder() {
     if (!validateForm()) return false;
     let totals = calculateTotals();
     
-    // Ermittle die gewünschte Zahlungsart
     let paymentMethod = 'Bar';
     if (currentDeliveryMethod === 'shipping') {
         paymentMethod = 'PayPal';
@@ -333,6 +321,7 @@ async function submitOrder() {
     
     let isPayPal = (paymentMethod === 'PayPal');
     
+    // Generiert die Werte für deine neuen Spalten
     let groesseText = "";
     let gesamtAnzahl = 0;
     
@@ -350,8 +339,8 @@ async function submitOrder() {
         payment_status: isPayPal ? 'Bezahlt via PayPal' : 'offen',
         total_amount_in_cents: totals.grandTotal,
         cart_items: cart,             
-        selected_size: groesseText,    
-        total_quantity: gesamtAnzahl,  
+        selected_size: groesseText,    // Übergabe an deine neue DB-Spalte
+        total_quantity: gesamtAnzahl,  // Übergabe an deine neue DB-Spalte
         status: 'pending',
         street: (currentDeliveryMethod === 'shipping') ? document.getElementById('custStreet').value.trim() : null,
         zip_code: (currentDeliveryMethod === 'shipping') ? document.getElementById('custZip').value.trim() : null,
@@ -360,7 +349,7 @@ async function submitOrder() {
 
     const { error } = await supabaseClient.from('orders').insert([orderData]);
     if (error) { 
-        alert('Fehler beim Absenden der Bestellung an die Datenbank: ' + error.message); 
+        alert('Fehler beim Absenden der Bestellung: ' + error.message); 
         console.error(error); 
         return false;
     }
