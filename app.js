@@ -155,9 +155,19 @@ function toggleCart() {
 }
 
 function showView(viewId) {
-    document.querySelectorAll('.drawer-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.drawer-view').forEach(view => {
+        view.classList.remove('active');
+    });
+
     document.getElementById(viewId).classList.add('active');
-    document.getElementById('checkoutOptions').style.display = (viewId === 'viewItems' && cart.length > 0) ? 'grid' : 'none';
+
+    const checkoutOptions = document.getElementById('checkoutOptions');
+
+    if (viewId === 'viewItems' && cart.length > 0) {
+        checkoutOptions.style.display = 'grid';
+    } else {
+        checkoutOptions.style.display = 'none';
+    }
 }
 
 function addToCart() {
