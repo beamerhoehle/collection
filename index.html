@@ -178,22 +178,22 @@
             </div>
         </div>
 
-       <div class="drawer-footer" id="checkoutOptions">
-    <div class="summary-row">
-        <span>Summe</span>
-        <span id="cartTotal">€ 0,00</span>
-    </div>
-
-    <div class="checkout-actions-grid">
-        <button class="method-btn" onclick="startCheckout('pickup')">
-            🏪 Abholung
-        </button>
-
-        <button class="method-btn shipping" onclick="startCheckout('shipping')">
-            📦 Versand
-        </button>
-    </div>
-</div>
+        <div class="drawer-footer">
+            <div class="summary-row">
+                <span>Gesamtsumme</span>
+                <span id="cartTotal" class="price">€ 0,00</span>
+            </div>
+            <div id="checkoutOptions" class="checkout-actions-grid">
+                <button class="method-btn" onclick="startCheckout('pickup')">
+                    <span class="icon">🏪</span>
+                    <span class="lbl">Abholung</span>
+                </button>
+                <button class="method-btn shipping" onclick="startCheckout('shipping')">
+                    <span class="icon">📦</span>
+                    <span class="lbl">Versand</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
