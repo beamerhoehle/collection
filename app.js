@@ -10,7 +10,6 @@ let currentQty = 1;
 let cart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
 let activeImages = [];
 let currentDeliveryMethod = 'pickup'; // 'pickup' oder 'shipping'
-let variantsData = []; // Speichert die geladenen Varianten-Daten für den Echtzeit-Lagerbestand
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadProduct('beamerhoehle-tshirt-n1');
@@ -33,15 +32,14 @@ async function loadProduct(slug) {
 
     currentProduct = product;
     activeImages = product.images || [];
-    variantsData = product.shirt_variants || [];
 
-    // Titel hardcoded auf deinen neuen Wunschnamen anpassen
-    document.getElementById('prodName').innerHTML = "CAN`T DRINK<br>WITH US";
+    // Titel befüllen
+    document.getElementById('prodName').innerHTML = product.name.replace(/ /g, '<br>');
     document.getElementById('prodSubtitle').innerText = product.subtitle || '';
     document.getElementById('prodPrice').innerText = `€ ${(product.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
 
     setupGallery();
-    renderSizeGrid(variantsData);
+    renderSizeGrid(product.shirt_variants);
 }
 
 // 3. IMAGES-GALLERY LOGIK
@@ -55,7 +53,7 @@ function setupGallery() {
     mainImg.src = activeImages[0];
     thumbStrip.innerHTML = ''; 
     thumbDots.innerHTML = '';
-
+    
     activeImages.forEach((imgUrl, index) => {
         const thumb = document.createElement('div');
         thumb.className = `thumb ${index === 0 ? 'active' : ''}`;
@@ -81,11 +79,12 @@ function switchImg(index, element) {
     document.querySelectorAll('.thumb-dot').forEach((d, i) => d.classList.toggle('active', i === index));
 }
 
-// 4. GRÖSSEN GENERIEREN & LAGERBESTANDS-ANZEIGE
+// 4. GRÖSSEN GENERIEREN & NEU SORTIEREN (Inklusive S & 3XL)
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
     sizeGrid.innerHTML = '';
     
+    // Reihenfolge-Schema für korrekte Sortierung im Frontend
     const sizeOrder = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
     variants.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
     
@@ -104,25 +103,10 @@ function renderSizeGrid(variants) {
                 document.getElementById('sizeError').classList.remove('show');
                 document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
-                
-                // Live-Lagerbestandsanzeige updaten
-                updateStockDisplay(variant.stock);
             };
         }
         sizeGrid.appendChild(btn);
     });
-}
-
-// Hilfsfunktion zur Anzeige des genauen Bestands unter dem Grid
-function updateStockDisplay(stock) {
-    const stockDisplay = document.getElementById('stockDisplay');
-    if (!stockDisplay) return;
-
-    if (stock === 1) {
-        stockDisplay.innerHTML = `<span style="color: #ff9900;">Nur noch 1 Stück auf Lager!</span>`;
-    } else {
-        stockDisplay.innerHTML = `<span style="color: #00ff66;">Auf Lager (${stock} Stück verfügbar)</span>`;
-    }
 }
 
 // 5. BASICS
@@ -137,8 +121,7 @@ function showView(viewId) {
 
 function addToCart() {
     if (!selectedSize) { document.getElementById('sizeError').classList.add('show'); return; }
-    // Im Warenkorb wird nun auch der angepasste Name verwendet
-    const cartItem = { id: currentProduct.id, name: "CAN`T DRINK WITH US", size: selectedSize, price: currentProduct.price_in_cents, qty: currentQty, image: activeImages[0] };
+    const cartItem = { id: currentProduct.id, name: currentProduct.name, size: selectedSize, price: currentProduct.price_in_cents, qty: currentQty, image: activeImages[0] };
     const idx = cart.findIndex(i => i.id === cartItem.id && i.size === cartItem.size);
     if (idx > -1) { cart[idx].qty += currentQty; } else { cart.push(cartItem); }
     saveCart(); toggleCart();
@@ -189,6 +172,7 @@ function renderCartItems() {
     let totals = calculateTotals();
     const shippingEl = document.createElement('div');
     shippingEl.style = "display:flex; justify-content:space-between; padding:0.5rem 0; font-size:0.9rem; color:#555; border-top:1px dashed #222; margin-top:1rem;";
+    
     if (currentDeliveryMethod === 'pickup') {
         shippingEl.innerHTML = `<span>Versandart:</span><span>🏪 Selbstabholung</span>`;
     } else {
@@ -209,7 +193,7 @@ function startCheckout(method) {
     const submitBtn = document.getElementById('standardSubmitBtn');
     const payNote = document.getElementById('paymentNote');
     const title = document.getElementById('checkoutTitle');
-
+    
     if (method === 'shipping') {
         title.innerText = "Lieferadresse";
         addrFields.style.display = "block";
@@ -248,8 +232,10 @@ function validateForm() {
 // 7. BESTELLUNG VERARBEITEN & PAYPAL-LINK ÖFFNEN
 async function submitOrder() {
     if (!validateForm()) return false;
+    
     let totals = calculateTotals();
     let isPayPal = (currentDeliveryMethod === 'shipping');
+    
     const orderData = {
         first_name: document.getElementById('custFirst').value.trim(),
         last_name: document.getElementById('custLast').value.trim(),
@@ -268,7 +254,9 @@ async function submitOrder() {
     if (error) { alert('Fehler beim Absenden.'); console.error(error); return false; }
     
     let formattedPrice = (totals.grandTotal / 100).toFixed(2);
+
     if (isPayPal) {
+        // Öffnet PayPal.me direkt mit dem korrekten Euro-Zahlungsbetrag für Julian Gromadka
         window.open(`https://www.paypal.me/JulianGromadka/${formattedPrice}`, '_blank');
         document.getElementById('successMsg').innerHTML = `Deine Bestellung wurde registriert!<br>Bitte schließe die Zahlung über das geöffnete PayPal-Fenster ab.<br><br><b>Betrag: € ${formattedPrice.replace('.', ',')}</b>`;
     } else {
