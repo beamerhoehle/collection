@@ -1,11 +1,112 @@
-/* GALLERY CHANNEL (Extrem modernisiert: Kein Hintergrund, Glow-Effekt & Runde Ecken) */
+/* ==========================================================================
+   1. RESET & BASICS
+   ========================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: #0a0a0a;
+  color: #ffffff;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   2. NAVIGATION
+   ========================================================================== */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #1a1a1a;
+  position: sticky;
+  top: 0;
+  background-color: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(12px);
+  z-index: 90;
+}
+
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 2px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-link {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.nav-link:hover {
+  color: #fff;
+}
+
+.cart-btn {
+  background: #fff;
+  color: #000;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border-radius: 0;
+  transition: opacity 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cart-btn:hover {
+  opacity: 0.9;
+}
+
+.cart-count {
+  background: #000;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   3. PRODUCT LAYOUT (RESPONSIVE GRID)
+   ========================================================================== */
+.product-wrap {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  min-height: calc(100vh - 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* --- GALLERY CHANNEL (Extrem modernisiert: Kein Kasten, runder Glow) --- */
 .gallery {
   padding: 3rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: transparent; /* Entfernt den grauen Hintergrundkasten komplett */
+  background-color: transparent; /* Entfernt den grauen Kasten komplett */
   border-right: 1px solid #1a1a1a;
   position: relative;
 }
@@ -22,14 +123,14 @@
 
 .gallery-main {
   width: 100%;
-  max-width: 500px; /* Leicht kompakter für ein edleres Design */
+  max-width: 500px; /* Perfekte, edle Kapselung */
   height: auto;
   aspect-ratio: 1 / 1;
   object-fit: contain;
-  border-radius: 24px; /* Weiche, moderne runde Ecken für das Bild */
+  border-radius: 24px; /* Wunderschöne, weiche Ecken wie auf dem Konzept */
   transition: all 0.3s ease-in-out;
   
-  /* Moderner, subtiler Leuchteffekt (Glow) um das Shirt herum statt eines harten Kastens */
+  /* Hochmoderner, subtiler Lichtschein um das Shirt */
   filter: drop-shadow(0 0 35px rgba(255, 255, 255, 0.12)); 
 }
 
@@ -49,8 +150,8 @@
   border: 1px solid #1a1a1a;
   cursor: pointer;
   padding: 0.2rem;
-  background: transparent; /* Auch hier Kasten-Hintergrund entfernen */
-  border-radius: 12px; /* Runde Ecken für die Vorschaubilder */
+  background: transparent;
+  border-radius: 12px; /* Abgerundete Miniaturansichten */
   transition: all 0.3s;
 }
 
@@ -70,7 +171,7 @@
   display: none;
 }
 
-/* PRODUCT INFO SIDE & NAME OPTIMIZATION */
+/* --- PRODUCT INFO SIDE & TYPOGRAPHY --- */
 .product-info {
   padding: 4rem 3rem;
   display: flex;
@@ -78,13 +179,675 @@
   justify-content: center;
 }
 
+.category-tag {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #888;
+  margin-bottom: 0.5rem;
+}
+
 .product-name {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 3.4rem; /* Optimierte Größe, damit CAN'T DRINK WITH US perfekt wirkt */
+  font-size: 3.4rem; /* Optimierter, starker moderner Titel */
   line-height: 1.1;
   letter-spacing: 1px;
   text-transform: uppercase;
   margin-bottom: 1rem;
   white-space: normal;
-  word-break: keep-all; /* Verhindert, dass Wörter mitten im Buchstaben brechen */
+  word-break: keep-all; /* Verhindert das Aufbrechen einzelner Wörter */
+}
+
+.product-subtitle {
+  font-size: 1.1rem;
+  color: #888;
+  margin-bottom: 2rem;
+  font-weight: 300;
+}
+
+.divider {
+  height: 1px;
+  background: #222;
+  margin-bottom: 2rem;
+}
+
+.price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.price-main {
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.price-note {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.section-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #555;
+  margin-bottom: 0.8rem;
+}
+
+/* --- SIZES BUTTONS --- */
+.size-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.size-btn {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #333;
+  padding: 1rem 0.5rem;
+  font-size: 0.85rem; /* Perfekt balanciert für "Größe + Stk." */
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  border-radius: 4px;
+}
+
+.size-btn:hover:not(:disabled) {
+  border-color: #fff;
+}
+
+.size-btn.selected {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+.error-msg {
+  color: #ff3333;
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+  display: none;
+}
+
+.error-msg.show {
+  display: block;
+}
+
+/* --- QUANTITY --- */
+.qty-row {
+  display: flex;
+  align-items: center;
+  border: 1px solid #333;
+  width: max-content;
+  margin-bottom: 2.5rem;
+}
+
+.qty-btn {
+  background: transparent;
+  color: #fff;
+  border: none;
+  width: 3.5rem;
+  height: 3rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.qty-btn:hover {
+  background: #111;
+}
+
+#qtyDisplay {
+  width: 3rem;
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* --- ADD BUTTON --- */
+.add-btn-wrap {
+  margin-bottom: 3rem;
+}
+
+.add-btn {
+  width: 100%;
+  background: #fff;
+  color: #000;
+  border: none;
+  padding: 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.add-btn:hover {
+  opacity: 0.9;
+}
+
+/* --- DETAILS (ACCORDION) --- */
+details {
+  border-top: 1px solid #222;
+}
+
+details:last-of-type {
+  border-bottom: 1px solid #222;
+}
+
+summary {
+  padding: 1.2rem 0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #aaa;
+  transition: color 0.3s;
+}
+
+summary:hover {
+  color: #fff;
+}
+
+summary::after {
+  content: '+';
+  font-size: 1.1rem;
+}
+
+details[open] summary {
+  color: #fff;
+}
+
+details[open] summary::after {
+  content: '−';
+}
+
+details p {
+  padding-bottom: 1.5rem;
+  font-size: 0.95rem;
+  color: #888;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   4. WARENKORB & CHECKOUT OVERLAYS
+   ========================================================================== */
+.cart-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 100;
+}
+
+.cart-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.cart-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 100%;
+  max-width: 480px;
+  height: 100vh;
+  background: #0d0d0d;
+  box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-panel.open {
+  right: 0;
+}
+
+.cart-header {
+  padding: 2rem;
+  border-bottom: 1px solid #1a1a1a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 1px;
+}
+
+.close-btn {
+  background: transparent;
+  color: #888;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: color 0.3s;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: #fff;
+}
+
+.cart-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  scrollbar-width: none;
+}
+
+.cart-body::-webkit-scrollbar {
+  display: none;
+}
+
+.view {
+  display: none;
+}
+
+.view.active {
+  display: block;
+}
+
+.cart-empty {
+  text-align: center;
+  color: #555;
+  padding: 3rem 0;
+}
+
+.cart-empty strong {
+  display: block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.cart-item {
+  display: flex;
+  gap: 1.5rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #141414;
+}
+
+.cart-item-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  background: #050505;
+  border: 1px solid #1a1a1a;
+  padding: 0.2rem;
+  border-radius: 8px;
+}
+
+.cart-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-item-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+
+.cart-item-size {
+  font-size: 0.8rem;
+  color: #555;
+  margin-bottom: 0.8rem;
+}
+
+.cart-item-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-qty-ctrl {
+  display: flex;
+  align-items: center;
+  border: 1px solid #222;
+}
+
+.cart-qty-btn {
+  background: transparent;
+  color: #fff;
+  border: none;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.cart-qty-val {
+  width: 1.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.cart-item-price {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.remove-item-btn {
+  background: transparent;
+  color: #ff3333;
+  border: none;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  align-self: flex-start;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+  margin-top: 0.4rem;
+}
+
+.remove-item-btn:hover {
+  opacity: 1;
+}
+
+/* --- CHECKOUT FORM --- */
+.checkout-form h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  margin: 1rem 0 0.2rem;
+}
+
+.form-sub {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.back-link {
+  background: transparent;
+  color: #888;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.back-link:hover {
+  color: #fff;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-row.full {
+  flex-direction: column;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #555;
+  margin-bottom: 0.4rem;
+}
+
+.form-group input {
+  background: #141414;
+  border: 1px solid #222;
+  padding: 0.8rem;
+  color: #fff;
+  font-size: 0.9rem;
+  border-radius: 0;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #fff;
+}
+
+.req {
+  color: #ff3333;
+}
+
+.form-error {
+  color: #ff3333;
+  font-size: 0.75rem;
+  margin-top: 0.2rem;
+  display: none;
+}
+
+.form-error.show {
+  display: block;
+}
+
+.pay-btn {
+  width: 100%;
+  background: #fff;
+  color: #000;
+  border: none;
+  padding: 1.2rem;
+  font-size: 0.95rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+.shipping-note {
+  font-size: 0.75rem;
+  color: #444;
+  text-align: center;
+  margin-top: 0.8rem;
+}
+
+/* --- SUCCESS STATE --- */
+.success-view {
+  text-align: center;
+  padding: 4rem 1rem;
+}
+
+.success-icon {
+  width: 60px;
+  height: 60px;
+  background: #00ff66;
+  color: #000;
+  border-radius: 50%;
+  font-size: 2rem;
+  line-height: 60px;
+  margin: 0 auto 1.5rem;
+}
+
+.success-view h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.success-view p {
+  color: #888;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* --- CART FOOTER --- */
+.cart-footer {
+  padding: 2rem;
+  border-top: 1px solid #1a1a1a;
+  background: #0a0a0a;
+}
+
+.cart-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.5rem;
+}
+
+.total-label {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.total-amount {
+  font-size: 1.6rem;
+  font-weight: 500;
+}
+
+.checkout-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.checkout-opt-btn {
+  background: #141414;
+  border: 1px solid #222;
+  padding: 1rem;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.checkout-opt-btn:hover:not(:disabled) {
+  border-color: #fff;
+  background: #1a1a1a;
+}
+
+.opt-icon {
+  font-size: 1.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.opt-label {
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.opt-sub {
+  font-size: 0.75rem;
+  color: #555;
+}
+
+#shippingAddressFields {
+  border-top: 1px dashed #222;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+}
+
+/* ==========================================================================
+   5. MOBILE & TABLET OPTIMIERUNG
+   ========================================================================== */
+@media (max-width: 968px) {
+  .product-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery {
+    padding: 2rem 1rem;
+    border-right: none;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  .gallery-main {
+    max-width: 100%;
+    padding: 1rem;
+  }
+
+  .thumb-strip {
+    display: none;
+  }
+
+  .thumb-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 15px;
+  }
+
+  .thumb-dot {
+    width: 8px;
+    height: 8px;
+    background: #333;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .thumb-dot.active {
+    background: #fff;
+    width: 20px;
+    border-radius: 4px;
+    transition: all 0.3s;
+  }
+
+  .product-info {
+    padding: 3rem 1.5rem;
+  }
+
+  .product-name {
+    font-size: 2.8rem;
+  }
+
+  .size-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  nav {
+    padding: 1rem;
+  }
+  
+  .logo {
+    font-size: 1.6rem;
+  }
+  
+  .product-name {
+    font-size: 2.3rem;
+  }
+
+  /* 2-spaltig auf Kleinstbildschirmen, damit Text wie "3XL (4 Stk.)" perfekt passt */
+  .size-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .cart-panel {
+    max-width: 100%;
+  }
+  
+  .checkout-options {
+    grid-template-columns: 1fr;
+  }
 }
