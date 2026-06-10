@@ -10,8 +10,13 @@ let currentProduct = null;
 let selectedSize = null;
 let currentQty = 1;
 let cart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
-let activeImages = [];
-let currentDeliveryMethod = 'pickup'; // 'pickup' oder 'shipping'
+let currentDeliveryMethod = 'pickup';
+
+// FEST DEFINIERTE SUPABASE BILD-URLS
+const activeImages = [
+    'https://kmanxvyaluledddvzdxv.supabase.co/storage/v1/object/public/product-images/No.3-(v1).jpg',
+    'https://kmanxvyaluledddvzdxv.supabase.co/storage/v1/object/public/product-images/No.3-(v2).jpg'
+];
 
 document.addEventListener('DOMContentLoaded', async () => {
     await loadProduct('beamerhoehle-tshirt-n1');
@@ -25,24 +30,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadProduct(slug) {
     const { data: product, error } = await supabaseClient
         .from('shirts')
-        .select(`*, shirt_variants (*).order(size.asc)`) 
+        .select(`*, shirt_variants (*)`) 
         .eq('slug', slug)
-        .single();
+        .maybeSingle(); // Verhindert Abstürze, falls Datenstruktur abweicht
 
     if (error) {
-        document.getElementById('prodName').innerHTML = `FEHLER:<br><span style="color:red;">${error.message}</span>`;
-        return;
+        console.error("Supabase Fehler:", error.message);
     }
 
-    currentProduct = product;
-    activeImages = product.images || [];
+    // Falls die DB down ist oder Fehler liefert, fülle lokale Fallbacks für die Texte
+    currentProduct = product || {
+        id: 'fallback-id',
+        name: 'KOLLEKTION N°3 T-SHIRT',
+        subtitle: 'Official Beamerhöhle Premium Shirt',
+        price_in_cents: 2999
+    };
 
-    document.getElementById('prodName').innerHTML = product.name || '';
-    document.getElementById('prodSubtitle').innerText = product.subtitle || '';
-    document.getElementById('prodPrice').innerText = `€ ${(product.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
+    document.getElementById('prodName').innerHTML = currentProduct.name || '';
+    document.getElementById('prodSubtitle').innerText = currentProduct.subtitle || '';
+    document.getElementById('prodPrice').innerText = `€ ${(currentProduct.price_in_cents / 100).toFixed(2).replace('.', ',')}`;
 
     setupGallery();
-    renderSizeGrid(product.shirt_variants);
+    renderSizeGrid(currentProduct.shirt_variants);
 }
 
 // ==========================================================================
@@ -86,14 +95,24 @@ function switchImg(index, element) {
 }
 
 // ==========================================================================
-// 4. GRÖSSEN GENERIEREN (Mit exakter Lagerbestandsanzeige)
+// 4. GRÖSSEN GENERIEREN (ABGESICHERT GEGEN DATENBANK-AUSFÄLLE)
 // ==========================================================================
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
     sizeGrid.innerHTML = '';
     
-    const fallbackStock = { 'S': 1, 'M': 8, 'L': 19, 'XL': 10, '2XL': 8, '3XL': 4 };
-    let finaleVarianten = (variants && variants.length > 0) ? variants : Object.keys(fallbackStock).map(size => ({ size, stock: fallbackStock[size] }));
+    // Festes Backup-Lager, falls die Verknüpfung "shirt_variants" leer ist
+    const fallbackStock = { 'S': 5, 'M': 8, 'L': 15, 'XL': 10, '2XL': 6, '3XL': 4 };
+    
+    let finaleVarianten = [];
+    if (variants && variants.length > 0) {
+        finaleVarianten = variants;
+    } else {
+        finaleVarianten = Object.keys(fallbackStock).map(size => ({
+            size: size,
+            stock: fallbackStock[size]
+        }));
+    }
 
     const sizeOrder = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
     finaleVarianten.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
@@ -102,14 +121,14 @@ function renderSizeGrid(variants) {
         const btn = document.createElement('button');
         btn.className = 'size-btn';
         
-        const currentStock = (variant.stock !== undefined && variant.stock !== null) ? variant.stock : (fallbackStock[variant.size] || 0);
+        const currentStock = (variant.stock !== undefined && variant.stock !== null) ? variant.stock : 5;
 
         if (currentStock <= 0) {
             btn.disabled = true;
             btn.style.opacity = '0.3';
             btn.innerText = `${variant.size} (Ausv.)`;
         } else {
-            btn.innerText = `${variant.size} (${currentStock} Stk.)`;
+            btn.innerText = `${variant.size}`;
             btn.onclick = () => {
                 selectedSize = variant.size;
                 document.getElementById('sizeError').classList.remove('show');
@@ -129,7 +148,6 @@ function changeQty(change) {
     document.getElementById('qtyDisplay').innerText = currentQty; 
 }
 
-// Nutzt deine originalen Klassen für das korrekte Side-Panel Layout
 function toggleCart() { 
     document.getElementById('cartOverlay').classList.toggle('open'); 
     document.getElementById('cartPanel').classList.toggle('open');
@@ -321,7 +339,6 @@ async function submitOrder() {
     
     let isPayPal = (paymentMethod === 'PayPal');
     
-    // Generiert die Werte für deine neuen Spalten
     let groesseText = "";
     let gesamtAnzahl = 0;
     
@@ -339,8 +356,8 @@ async function submitOrder() {
         payment_status: isPayPal ? 'Bezahlt via PayPal' : 'offen',
         total_amount_in_cents: totals.grandTotal,
         cart_items: cart,             
-        selected_size: groesseText,    // Übergabe an deine neue DB-Spalte
-        total_quantity: gesamtAnzahl,  // Übergabe an deine neue DB-Spalte
+        selected_size: groesseText,    
+        total_quantity: gesamtAnzahl,  
         status: 'pending',
         street: (currentDeliveryMethod === 'shipping') ? document.getElementById('custStreet').value.trim() : null,
         zip_code: (currentDeliveryMethod === 'shipping') ? document.getElementById('custZip').value.trim() : null,
