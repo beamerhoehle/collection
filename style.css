@@ -1,3 +1,6 @@
+/* ==========================================================================
+   ROOT & RESET
+   ========================================================================== */
 :root {
     --bg-dark: #070708;
     --card-bg: #121214;
@@ -23,7 +26,9 @@ body {
     overflow-x: hidden;
 }
 
-/* NAVBAR */
+/* ==========================================================================
+   NAVBAR
+   ========================================================================== */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -76,9 +81,7 @@ body {
     transition: transform 0.2s ease;
 }
 
-.modern-cart-btn:hover {
-    transform: scale(1.05);
-}
+.modern-cart-btn:hover { transform: scale(1.05); }
 
 .cart-badge {
     position: absolute;
@@ -92,7 +95,9 @@ body {
     border-radius: 10px;
 }
 
-/* LAYOUT CONTAINER */
+/* ==========================================================================
+   MAIN LAYOUT
+   ========================================================================== */
 .store-container {
     display: grid;
     grid-template-columns: 1.1fr 0.9fr;
@@ -101,7 +106,9 @@ body {
     min-height: calc(100vh - 85px);
 }
 
-/* ECHTER KARUSSELL / SLIDER DESIGN */
+/* ==========================================================================
+   SLIDER / CAROUSEL
+   ========================================================================== */
 .slider-section {
     padding: 3rem;
     display: flex;
@@ -163,10 +170,7 @@ body {
     z-index: 10;
 }
 
-.slider-arrow:hover {
-    background: rgba(255, 255, 255, 0.25);
-}
-
+.slider-arrow:hover { background: rgba(255, 255, 255, 0.25); }
 .slider-arrow.prev { left: 1rem; }
 .slider-arrow.next { right: 1rem; }
 
@@ -192,7 +196,9 @@ body {
     border-radius: 4px;
 }
 
-/* PRODUKT DETAILS RECHTS */
+/* ==========================================================================
+   PRODUCT DETAILS (RIGHT COLUMN)
+   ========================================================================== */
 .details-section {
     padding: 4rem 3.5rem;
     display: flex;
@@ -240,7 +246,9 @@ body {
     margin-top: 0.25rem;
 }
 
-/* INTERAKTIVE BLÖCKE & SELEKTOREN */
+/* ==========================================================================
+   SIZE SELECTOR
+   ========================================================================== */
 .interactive-block {
     display: flex;
     flex-direction: column;
@@ -304,7 +312,9 @@ body {
 
 .modern-error.show { display: block; }
 
-/* REIHE FÜR QUANTITY & KAUF-BUTTON */
+/* ==========================================================================
+   PURCHASE ROW (QTY + CTA)
+   ========================================================================== */
 .purchase-row {
     display: flex;
     gap: 1rem;
@@ -346,6 +356,7 @@ body {
     border-radius: 14px;
     cursor: pointer;
     transition: opacity 0.2s, transform 0.2s;
+    width: 100%;
 }
 
 .action-btn-primary:hover {
@@ -353,15 +364,15 @@ body {
     transform: translateY(-1px);
 }
 
-/* ACCORDIONS (DETAILS) */
+/* ==========================================================================
+   ACCORDIONS
+   ========================================================================== */
 .accordion-group {
     border-top: 1px solid var(--border-color);
     margin-top: 1rem;
 }
 
-details {
-    border-bottom: 1px solid var(--border-color);
-}
+details { border-bottom: 1px solid var(--border-color); }
 
 summary {
     padding: 1.25rem 0;
@@ -385,7 +396,9 @@ details[open] summary::after { content: '−'; }
 
 .spec-text { margin-top: 1rem; color: #fff; font-size: 0.8rem; }
 
-/* SLIDE-OVER WARENKORB DRAWER */
+/* ==========================================================================
+   CART DRAWER OVERLAY
+   ========================================================================== */
 .glass-overlay {
     position: fixed;
     top: 0;
@@ -426,6 +439,7 @@ details[open] summary::after { content: '−'; }
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .close-drawer {
@@ -439,13 +453,16 @@ details[open] summary::after { content: '−'; }
 .drawer-body {
     flex: 1;
     overflow-y: auto;
-    padding: 2rem;
+    padding: 1.5rem 2rem;
+    min-height: 0;
 }
 
 .drawer-view { display: none; }
 .drawer-view.active { display: block; }
 
-/* CART ITEM DESIGN */
+/* ==========================================================================
+   CART ITEMS
+   ========================================================================== */
 .cart-item {
     display: flex;
     gap: 1.25rem;
@@ -459,13 +476,15 @@ details[open] summary::after { content: '−'; }
     height: 70px;
     border-radius: 10px;
     object-fit: cover;
+    flex-shrink: 0;
 }
 
 .cart-item-details {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 0.4rem;
+    min-width: 0;
 }
 
 .item-meta h5 { font-size: 0.9rem; font-weight: 500; }
@@ -475,7 +494,7 @@ details[open] summary::after { content: '−'; }
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
 }
 
 .mini-qty {
@@ -503,6 +522,9 @@ details[open] summary::after { content: '−'; }
     color: var(--error-red);
     font-size: 0.75rem;
     cursor: pointer;
+    padding: 0;
+    margin-top: 0.25rem;
+    text-align: left;
 }
 
 .cart-empty {
@@ -511,11 +533,23 @@ details[open] summary::after { content: '−'; }
     padding: 4rem 0;
 }
 
-/* CHECKOUT FORMULAR STYLING */
+.cart-cost-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-color);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   CHECKOUT FORMULAR
+   ========================================================================== */
 .checkout-scroll {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .back-btn {
@@ -524,11 +558,19 @@ details[open] summary::after { content: '−'; }
     color: var(--text-muted);
     font-size: 0.8rem;
     cursor: pointer;
-    align-self: flex-start;
+    padding: 0;
+    text-align: left;
 }
 
-.checkout-title { font-size: 1.25rem; font-weight: 600; }
+.checkout-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.25rem;
+}
 
+/* Form card: used as section container */
 .form-card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -536,18 +578,36 @@ details[open] summary::after { content: '−'; }
     border-radius: 14px;
     display: flex;
     flex-direction: column;
+    gap: 0.85rem;
+}
+
+.form-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* Radio tiles */
+.radio-tile-group {
+    display: flex;
     gap: 0.75rem;
 }
 
-.form-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); }
-
-.radio-tile-group { display: flex; gap: 0.75rem; }
 .radio-tile {
     flex: 1;
     position: relative;
     cursor: pointer;
 }
-.radio-tile input { position: absolute; opacity: 0; }
+
+.radio-tile input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
 .radio-tile .tile-content {
     display: block;
     background: #1c1c1e;
@@ -556,36 +616,74 @@ details[open] summary::after { content: '−'; }
     text-align: center;
     border-radius: 10px;
     font-size: 0.85rem;
+    transition: all 0.2s;
 }
+
 .radio-tile input:checked + .tile-content {
     border-color: #fff;
     background: #fff;
     color: #000;
 }
 
-.form-grid { display: flex; gap: 0.75rem; }
-.input-group { flex: 1; display: flex; flex-direction: column; gap: 0.35rem; }
-.input-group label { font-size: 0.75rem; color: var(--text-muted); }
+/* Input grid & groups */
+.form-grid {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.input-group label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
 .input-group input {
-    background: var(--card-bg);
+    background: #1c1c1e;
     border: 1px solid var(--border-color);
-    padding: 0.85rem;
+    padding: 0.85rem 1rem;
     color: #fff;
     border-radius: 10px;
     font-size: 0.9rem;
+    width: 100%;
+    transition: border-color 0.2s;
 }
-.input-group input:focus { outline: none; border-color: #fff; }
 
-.field-error { color: var(--error-red); font-size: 0.75rem; display: none; }
+.input-group input:focus {
+    outline: none;
+    border-color: #fff;
+}
+
+.field-error {
+    color: var(--error-red);
+    font-size: 0.75rem;
+    display: none;
+    margin-top: 0.1rem;
+}
+
 .field-error.show { display: block; }
 
-.checkout-footer-note { font-size: 0.75rem; color: var(--text-muted); text-align: center; }
+.checkout-footer-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 0 0.5rem;
+}
 
-/* SUCCESS PANE */
+/* ==========================================================================
+   SUCCESS PANE
+   ========================================================================== */
 .success-pane {
     text-align: center;
     padding: 4rem 1rem;
 }
+
 .success-ring {
     width: 64px;
     height: 64px;
@@ -598,22 +696,34 @@ details[open] summary::after { content: '−'; }
     margin: 0 auto 1.5rem;
 }
 
-/* DRAWER FOOTER */
+/* ==========================================================================
+   DRAWER FOOTER
+   ========================================================================== */
 .drawer-footer {
-    padding: 1.5rem 2rem;
+    padding: 1.25rem 2rem;
     border-top: 1px solid var(--border-color);
     background: #0b0b0c;
+    flex-shrink: 0;
 }
 
 .summary-row {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
 }
-.summary-row .price { font-size: 1.5rem; font-weight: 600; }
 
-.checkout-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.summary-row .price {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.checkout-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
 .method-btn {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -626,14 +736,22 @@ details[open] summary::after { content: '−'; }
     justify-content: center;
     gap: 0.5rem;
     font-weight: 500;
+    transition: border-color 0.2s;
 }
+
 .method-btn:hover { border-color: #fff; }
 .method-btn.shipping { background: #fff; color: #000; }
 
-/* RESPONSIVE MEDIA QUERIES */
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
 @media (max-width: 992px) {
     .store-container { grid-template-columns: 1fr; }
-    .slider-section { border-right: none; border-bottom: 1px solid var(--border-color); padding: 1.5rem; }
+    .slider-section {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem;
+    }
     .details-section { padding: 2.5rem 1.5rem; }
     .hero-title { font-size: 2rem; }
     .modern-grid { grid-template-columns: repeat(3, 1fr); }
@@ -642,4 +760,5 @@ details[open] summary::after { content: '−'; }
 @media (max-width: 480px) {
     .navbar { padding: 1rem 1.5rem; }
     .checkout-actions-grid { grid-template-columns: 1fr; }
+    .form-grid { flex-direction: column; }
 }
