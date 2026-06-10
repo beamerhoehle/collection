@@ -79,7 +79,7 @@ function switchImg(index, element) {
     document.querySelectorAll('.thumb-dot').forEach((d, i) => d.classList.toggle('active', i === index));
 }
 
-// 4. GRÖSSEN GENERIEREN & NEU SORTIEREN (Inklusive S & 3XL)
+// 4. GRÖSSEN GENERIEREN & NEU SORTIEREN (Mit genauer Lagerbestandsanzeige)
 function renderSizeGrid(variants) {
     const sizeGrid = document.getElementById('sizeGrid');
     sizeGrid.innerHTML = '';
@@ -91,13 +91,20 @@ function renderSizeGrid(variants) {
     variants.forEach(variant => {
         const btn = document.createElement('button');
         btn.className = 'size-btn';
-        btn.innerText = variant.size;
         
-        if (variant.stock <= 0) {
+        // Nutzt den echten Stock aus der DB. Falls dieser noch nicht stimmt, 
+        // greift das Fallback-Objekt mit deinen exakten Werten gr_stock:
+        const staticStock = { 'S': 1, 'M': 8, 'L': 19, 'XL': 10, '2XL': 8, '3XL': 4 };
+        const currentStock = (variant.stock !== undefined && variant.stock !== null) ? variant.stock : (staticStock[variant.size] || 0);
+
+        // Text für den Button generieren (z.B. "M (8 Stk.)")
+        if (currentStock <= 0) {
             btn.disabled = true;
             btn.style.opacity = '0.3';
-            btn.innerText += ' (Ausv.)';
+            btn.innerText = `${variant.size} (Ausv.)`;
         } else {
+            btn.innerText = `${variant.size} (${currentStock} Stk.)`;
+            
             btn.onclick = () => {
                 selectedSize = variant.size;
                 document.getElementById('sizeError').classList.remove('show');
