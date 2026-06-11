@@ -64,6 +64,7 @@ body {
     border: 1px solid var(--border-color);
     padding: 0.35rem 0.75rem;
     border-radius: 100px;
+    white-space: nowrap;
 }
 
 .modern-cart-btn {
@@ -645,11 +646,14 @@ details[open] summary::after { content: '−'; }
     display: block;
     background: #1c1c1e;
     border: 1px solid var(--border-color);
-    padding: 0.85rem;
+    padding: 0.85rem 0.5rem;
     text-align: center;
     border-radius: 10px;
     font-size: 0.85rem;
     transition: all 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .radio-tile input:checked + .tile-content {
@@ -791,7 +795,10 @@ details[open] summary::after { content: '−'; }
 }
 
 @media (max-width: 480px) {
-    .navbar { padding: 1rem 1.5rem; }
+    .navbar { padding: 1rem 1rem; }
+    .brand-logo { font-size: 1rem; }
+    .nav-tag { font-size: 0.65rem; padding: 0.3rem 0.5rem; letter-spacing: 0.5px; }
+    .radio-tile .tile-content { font-size: 0.75rem; padding: 0.75rem 0.35rem; }
     .checkout-actions-grid { grid-template-columns: 1fr; }
     .form-grid { flex-direction: column; }
 }
