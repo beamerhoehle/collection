@@ -411,6 +411,10 @@ async function submitOrder() {
     const isPayPal = (payMethod === 'PayPal');
     const finalSizes = cart.map(i => `${i.size} (${i.qty}x)`).join(', ');
     const finalQty = cart.reduce((acc, i) => acc + i.qty, 0);
+    const printPrice = (calculations.grand / 100).toFixed(2);
+
+    // Verwendungszweck für PayPal: Name + Bestelldetails
+    const paypalNote = encodeURIComponent(`Beamerhoehle ${firstName} ${lastName} ${finalSizes}`);
 
     const dataPayload = {
         first_name: firstName,
@@ -418,12 +422,12 @@ async function submitOrder() {
         email: email,
         delivery_method: currentDeliveryMethod,
         payment_method: payMethod,
-        payment_status: isPayPal ? 'Bezahlt via PayPal' : 'offen',
+        payment_status: isPayPal ? 'Ausstehend – PayPal' : 'offen',
         total_amount_in_cents: calculations.grand,
         cart_items: cart,
         selected_size: finalSizes,
         total_quantity: finalQty,
-        status: 'pending',
+        status: isPayPal ? 'awaiting_payment' : 'pending',
         street:    currentDeliveryMethod === 'shipping' ? document.getElementById('custStreet').value.trim() : null,
         zip_code:  currentDeliveryMethod === 'shipping' ? document.getElementById('custZip').value.trim() : null,
         city:      currentDeliveryMethod === 'shipping' ? document.getElementById('custCity').value.trim() : null
@@ -435,15 +439,21 @@ async function submitOrder() {
         return;
     }
 
-    const printPrice = (calculations.grand / 100).toFixed(2);
-
     if (isPayPal) {
+        // PayPal.me Link mit Betrag — Verwendungszweck kann leider nicht per URL gesetzt werden
+        // Kunde sieht aber Hinweis im Erfolgs-Screen
         window.open(`https://www.paypal.me/JulianGromadka/${printPrice}`, '_blank');
         document.getElementById('successMsg').innerHTML =
-            `Bestellung übermittelt!<br>Bitte begleiche den Betrag im geöffneten PayPal-Fenster.<br><br><strong>Betrag: € ${printPrice.replace('.', ',')}</strong>`;
+            `Zahlung wird verarbeitet!<br><br>
+            Bitte trage im PayPal-Verwendungszweck ein:<br>
+            <strong style="font-size:1.1rem; display:block; margin:0.75rem 0; padding:0.75rem; background:#1c1c1e; border-radius:8px; letter-spacing:0.5px;">
+            Beamerhoehle ${firstName} ${lastName}
+            </strong>
+            Betrag: <strong>€ ${printPrice.replace('.', ',')}</strong><br><br>
+            <span style="color:#8e8e93; font-size:0.8rem;">Deine Bestellung wird nach Zahlungseingang bearbeitet.</span>`;
     } else {
         document.getElementById('successMsg').innerHTML =
-            `Bestellung für dich reserviert!<br>Bitte bringe den Betrag passend zur Abholung mit.<br><br><strong>Betrag: € ${printPrice.replace('.', ',')}</strong>`;
+            `Bestellung reserviert!<br><br>Bitte bringe den Betrag passend zur Abholung mit.<br><br><strong>Betrag: € ${printPrice.replace('.', ',')}</strong>`;
     }
 
     cart = [];
