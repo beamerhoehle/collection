@@ -10,6 +10,8 @@ let currentProduct = null;
 let selectedSize = null;
 let currentQty = 1;
 let currentSlideIndex = 0;
+let stockMap = {}; // { 'S': 5, 'M': 3, ... } — live aus DB, für Stock-Validierung
+
 // Alte Cart-Einträge mit 'id' statt 'product_id' migrieren
 let rawCart = JSON.parse(localStorage.getItem('vaux_cart')) || [];
 rawCart = rawCart.map(item => {
@@ -152,6 +154,10 @@ function buildSizes(variants) {
     const sizeOrder = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
     finalArray.sort((a, b) => sizeOrder.indexOf(a.size) - sizeOrder.indexOf(b.size));
 
+    // stockMap neu aufbauen für Validierungen
+    stockMap = {};
+    finalArray.forEach(v => { stockMap[v.size] = v.stock ?? 0; });
+
     finalArray.forEach(variant => {
         const btn = document.createElement('button');
         const stock = variant.stock !== undefined ? variant.stock : 5;
@@ -165,6 +171,8 @@ function buildSizes(variants) {
             btn.innerHTML = `<span class="size-label">${variant.size}</span><span class="stock-label stock-low">Nur noch ${stock}</span>`;
             btn.onclick = () => {
                 selectedSize = variant.size;
+                currentQty = 1;
+                document.getElementById('qtyDisplay').innerText = currentQty;
                 document.getElementById('selectedSizeLabel').innerText = selectedSize;
                 document.getElementById('sizeError').classList.remove('show');
                 document.querySelectorAll('.size-tile').forEach(b => b.classList.remove('selected'));
@@ -175,6 +183,8 @@ function buildSizes(variants) {
             btn.innerHTML = `<span class="size-label">${variant.size}</span><span class="stock-label">${stock} verfügbar</span>`;
             btn.onclick = () => {
                 selectedSize = variant.size;
+                currentQty = 1;
+                document.getElementById('qtyDisplay').innerText = currentQty;
                 document.getElementById('selectedSizeLabel').innerText = selectedSize;
                 document.getElementById('sizeError').classList.remove('show');
                 document.querySelectorAll('.size-tile').forEach(b => b.classList.remove('selected'));
@@ -189,7 +199,9 @@ function buildSizes(variants) {
 // 4. QUANTITY & CART INTERACTION
 // ==========================================================================
 function changeQty(mod) {
-    currentQty = Math.max(1, currentQty + mod);
+    // Maximum auf verfügbaren Stock der gewählten Größe begrenzen
+    const maxStock = selectedSize ? (stockMap[selectedSize] ?? 99) : 99;
+    currentQty = Math.min(maxStock, Math.max(1, currentQty + mod));
     document.getElementById('qtyDisplay').innerText = currentQty;
 }
 
@@ -216,6 +228,24 @@ function addToCart() {
         document.getElementById('sizeError').classList.add('show');
         return;
     }
+
+    // Stock-Check: bereits im Warenkorb + neue Qty darf Stock nicht überschreiten
+    const alreadyInCart = cart.find(c => c.product_id === currentProduct.id && c.size === selectedSize);
+    const alreadyQty = alreadyInCart ? alreadyInCart.qty : 0;
+    const available = stockMap[selectedSize] ?? 0;
+
+    if (alreadyQty + currentQty > available) {
+        const remaining = available - alreadyQty;
+        if (remaining <= 0) {
+            alert(`Du hast bereits die maximale Menge für Größe ${selectedSize} im Warenkorb.`);
+        } else {
+            alert(`Nur noch ${remaining} Stück in Größe ${selectedSize} verfügbar.`);
+            currentQty = remaining;
+            document.getElementById('qtyDisplay').innerText = currentQty;
+        }
+        return;
+    }
+
     const item = {
         product_id: currentProduct.id,
         name: currentProduct.name,
@@ -310,6 +340,15 @@ function renderCartItems() {
 }
 
 function updateCartQty(idx, mod) {
+    // + Button: Stock-Check bevor erhöht wird
+    if (mod > 0) {
+        const item = cart[idx];
+        const available = stockMap[item.size] ?? 0;
+        if (item.qty >= available) {
+            alert(`Maximale verfügbare Menge für Größe ${item.size} erreicht.`);
+            return;
+        }
+    }
     cart[idx].qty += mod;
     if (cart[idx].qty <= 0) cart.splice(idx, 1);
     saveCartState();
@@ -390,6 +429,16 @@ function validateForm() {
 // ==========================================================================
 async function submitOrder() {
     if (!validateForm()) return;
+
+    // Finaler Stock-Check vor dem DB-Insert (Absicherung gegen Race Conditions
+    // z.B. wenn zwei Tabs gleichzeitig offen sind)
+    for (const item of cart) {
+        const available = stockMap[item.size] ?? 0;
+        if (item.qty > available) {
+            alert(`Leider ist die Größe ${item.size} nicht mehr in ausreichender Menge verfügbar. Bitte aktualisiere deinen Warenkorb.`);
+            return;
+        }
+    }
 
     const calculations = getTotals();
 
