@@ -730,11 +730,11 @@
         <div class="login-brand-sub">Admin Dashboard</div>
       </div>
       <div class="login-field">
-        <label>Julian</label>
+        <label>Benutzername</label>
         <input type="text" id="loginUser" placeholder="admin" autocomplete="username">
       </div>
       <div class="login-field">
-        <label>JuFaMa3Fr!</label>
+        <label>Passwort</label>
         <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"
                onkeydown="if(event.key==='Enter') doLogin()">
       </div>
@@ -881,8 +881,8 @@
   <script>
     // ── AUTH ─────────────────────────────────────────────────────────────────
     // Trag hier deine Zugangsdaten ein (NICHT im Chat schicken):
-    const ADMIN_USER = 'DEIN_BENUTZERNAME';
-    const ADMIN_PASS = 'DEIN_PASSWORT';
+    const ADMIN_USER = 'Julian';
+    const ADMIN_PASS = 'JuFaMa3Fr!';
 
     function doLogin() {
       const u = document.getElementById('loginUser').value.trim();
